@@ -1,6 +1,13 @@
 import { useState } from "react";
-import PageHeader from "../components/PageHeader";
-import ordersData from "../data/orders.json";
+import PageHeader from "../../components/PageHeader";
+
+const ordersData = [
+  { id: "ORD-001", customerName: "Budi Santoso", status: "Completed", totalPrice: 250000, orderDate: "2025-04-01" },
+  { id: "ORD-002", customerName: "Siti Rahayu", status: "Pending", totalPrice: 180000, orderDate: "2025-04-03" },
+  { id: "ORD-003", customerName: "Andi Wijaya", status: "Cancelled", totalPrice: 320000, orderDate: "2025-04-05" },
+  { id: "ORD-004", customerName: "Dewi Kusuma", status: "Completed", totalPrice: 95000, orderDate: "2025-04-07" },
+  { id: "ORD-005", customerName: "Reza Firmansyah", status: "Pending", totalPrice: 450000, orderDate: "2025-04-10" },
+];
 
 const STATUS_COLOR = {
   Completed: "bg-green-100 text-green-700",

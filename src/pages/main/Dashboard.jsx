@@ -1,85 +1,67 @@
 import { useState } from "react";
-import { FaShoppingCart, FaTruck, FaBan, FaDollarSign, FaUtensils } from "react-icons/fa";
+import { FaUsers, FaCalendarCheck, FaTooth, FaDollarSign } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import { useClinic } from "../../context/ClinicContext";
 import PageHeader from "../../components/PageHeader";
 
-
 export default function Dashboard() {
-  // Filter state
-  const [filter, setFilter] = useState("Weekly");
+  const { patients, appointments } = useClinic();
 
-  // Data dummy
-  const recentOrders = [
-    { id: "#00121", menu: "Chicken Teriyaki", customer: "Ahmad", status: "Completed", color: "text-green-500" },
-    { id: "#00122", menu: "Beef Burger", customer: "Siti", status: "Pending", color: "text-yellow-500" },
-    { id: "#00123", menu: "Fresh Salad", customer: "Budi", status: "Canceled", color: "text-red-500" },
-  ];
+  // Hitung Statistik
+  const totalPasien = patients.length;
+  const totalJanjiSelesai = appointments.filter(a => a.status === "Selesai").length;
+  
+  // Kasus mendesak: misal layanan Cabut Gigi atau Odontektomi
+  const totalKasusMendesak = appointments.filter(a => 
+    a.layanan.includes("Cabut") || a.layanan.includes("Odontektomi")
+  ).length;
+
+
+  // Kunjungan Terakhir (4 data terakhir)
+  const recentAppointments = [...appointments].reverse().slice(0, 4);
 
   return (
     <div id="dashboard-container" className="p-2">
       
       {/* Header + Filter */}
       <div className="flex justify-between items-center pr-5">
-        <PageHeader />
+        <PageHeader title="Dashboard" breadcrumb="Overview" />
 
-        <div className="flex bg-white p-1 rounded-xl shadow-sm border border-gray-100 h-fit">
-          {["Daily", "Weekly", "Monthly"].map((item) => (
-            <button
-              key={item}
-              onClick={() => setFilter(item)}
-              className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
-                filter === item
-                  ? "bg-hijau text-white shadow-md"
-                  : "text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              {item}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* CARD GRID */}
-      <div className="p-5 grid sm:grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="p-5 grid sm:grid-cols-1 md:grid-cols-3 gap-6">
 
-        <div className="flex items-center space-x-5 bg-white rounded-2xl shadow-sm p-6">
-          <div className="bg-hijau rounded-full p-4 text-3xl text-white">
-            <FaShoppingCart />
+        <div className="flex items-center space-x-5 bg-white rounded-2xl shadow-sm p-6 hover:shadow-md transition-all">
+          <div className="bg-blue-500 rounded-full p-4 text-3xl text-white">
+            <FaUsers />
           </div>
           <div>
-            <p className="text-2xl font-bold text-gray-800">75</p>
-            <p className="text-gray-400 text-sm">Total Orders</p>
+            <p className="text-2xl font-bold text-gray-800">{totalPasien}</p>
+            <p className="text-gray-400 text-sm">Total Pasien</p>
           </div>
         </div>
 
-        <div className="flex items-center space-x-5 bg-white rounded-2xl shadow-sm p-6">
-          <div className="bg-biru rounded-full p-4 text-3xl text-white">
-            <FaTruck />
+        <div className="flex items-center space-x-5 bg-white rounded-2xl shadow-sm p-6 hover:shadow-md transition-all">
+          <div className="bg-indigo-500 rounded-full p-4 text-3xl text-white">
+            <FaCalendarCheck />
           </div>
           <div>
-            <p className="text-2xl font-bold text-gray-800">175</p>
-            <p className="text-gray-400 text-sm">Total Delivered</p>
+            <p className="text-2xl font-bold text-gray-800">{totalJanjiSelesai}</p>
+            <p className="text-gray-400 text-sm">Janji Temu Selesai</p>
           </div>
         </div>
 
-        <div className="flex items-center space-x-5 bg-white rounded-2xl shadow-sm p-6">
-          <div className="bg-merah rounded-full p-4 text-3xl text-white opacity-80">
-            <FaBan />
+        <div className="flex items-center space-x-5 bg-white rounded-2xl shadow-sm p-6 hover:shadow-md transition-all">
+          <div className="bg-red-400 rounded-full p-4 text-3xl text-white opacity-80">
+            <FaTooth />
           </div>
           <div>
-            <p className="text-2xl font-bold text-gray-800">40</p>
-            <p className="text-gray-400 text-sm">Total Canceled</p>
+            <p className="text-2xl font-bold text-gray-800">{totalKasusMendesak}</p>
+            <p className="text-gray-400 text-sm">Kasus Mendesak</p>
           </div>
         </div>
 
-        <div className="flex items-center space-x-5 bg-white rounded-2xl shadow-sm p-6">
-          <div className="bg-kuning rounded-full p-4 text-3xl text-white">
-            <FaDollarSign />
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-gray-800">Rp.128</p>
-            <p className="text-gray-400 text-sm">Total Revenue</p>
-          </div>
-        </div>
 
       </div>
 
@@ -87,10 +69,10 @@ export default function Dashboard() {
       <div className="mx-5 mt-2 p-6 bg-white rounded-2xl shadow-sm border border-gray-50">
         
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-bold text-gray-800">Recent Orders</h3>
-          <button className="text-hijau font-bold text-sm hover:underline">
-            View All
-          </button>
+          <h3 className="text-xl font-bold text-gray-800">Kunjungan Terakhir</h3>
+          <Link to="/janji-temu" className="text-blue-600 font-bold text-sm hover:text-blue-700 hover:underline">
+            Lihat Semua
+          </Link>
         </div>
 
         <div className="overflow-x-auto">
@@ -98,36 +80,37 @@ export default function Dashboard() {
             
             <thead>
               <tr className="text-gray-400 text-sm border-b border-gray-50">
-                <th className="pb-4 font-medium">Order ID</th>
-                <th className="pb-4 font-medium">Menu</th>
-                <th className="pb-4 font-medium">Customer</th>
+                <th className="pb-4 font-medium">ID Pasien</th>
+                <th className="pb-4 font-medium">Layanan / Tindakan</th>
+                <th className="pb-4 font-medium">Nama Pasien</th>
                 <th className="pb-4 font-medium">Status</th>
               </tr>
             </thead>
 
             <tbody className="text-sm">
-              {recentOrders.map((order, index) => (
+              {recentAppointments.map((appointment, index) => {
+                const color = appointment.status === 'Selesai' ? 'text-green-600' : appointment.status === 'Menunggu' ? 'text-yellow-500' : 'text-red-400';
+                return (
                 <tr
                   key={index}
                   className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
                 >
-                  <td className="py-4 font-bold text-gray-700">{order.id}</td>
+                  <td className="py-4 font-bold text-gray-700">{appointment.id}</td>
 
                   <td className="py-4 flex items-center gap-3">
-                    <div className="p-2 bg-green-50 text-hijau rounded-lg">
-                      <FaUtensils />
+                    <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                      <FaTooth />
                     </div>
-                    {order.menu}
+                    {appointment.layanan}
                   </td>
 
-                  <td className="py-4 text-gray-600">{order.customer}</td>
+                  <td className="py-4 text-gray-600">{appointment.pasienNama}</td>
 
-                  {/* FIX ERROR DI SINI */}
-                  <td className={`py-4 font-bold ${order.color}`}>
-                    {order.status}
+                  <td className={`py-4 font-bold ${color}`}>
+                    {appointment.status}
                   </td>
                 </tr>
-              ))}
+              )})}
             </tbody>
 
           </table>

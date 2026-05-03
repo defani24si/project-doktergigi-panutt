@@ -16,7 +16,7 @@ export default function Header() {
 
   return (
     <div id="header-container" className="flex justify-between items-center p-4">
-      
+
       {/* Search Bar */}
       <div id="search-bar" className="relative w-full max-w-lg">
         <input
@@ -33,7 +33,7 @@ export default function Header() {
 
       {/* Icon & Profile Section */}
       <div id="icons-container" className="flex items-center space-x-4">
-        
+
         {/* ⏰ JAM */}
         <div
           id="clock-container"
@@ -79,7 +79,7 @@ export default function Header() {
           className="flex items-center space-x-4 border-l pl-4 border-gray-300"
         >
           <span id="profile-text" className="text-gray-700">
-            Hello, <b className="font-bold">Fikri Muhaffizh</b>
+            Hello, <b className="font-bold">panutt</b>
           </span>
           <img
             id="profile-avatar"

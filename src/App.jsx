@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import { ClinicProvider } from "./context/ClinicContext";
 // import Dashboard from "./pertemuan-5/pages/main/Dashboard";
 
 import React, { Suspense, useState } from "react";
@@ -17,9 +18,9 @@ import React, { Suspense, useState } from "react";
 // import Forgot from "./pages/auth/Forgot";
 
 const Dashboard = React.lazy(() => import("./pages/main/Dashboard"));
-const Orders = React.lazy(() => import("./pages/main/Orders"));
+const JanjiTemu = React.lazy(() => import("./pages/main/JanjiTemu"));
 const Header = React.lazy(() => import("./components/Header"));
-const Customers = React.lazy(() => import("./pages/main/Customers"));
+const Pasien = React.lazy(() => import("./pages/main/Pasien"));
 const NotFound = React.lazy(() => import("./pages/main/NotFound"));
 const Error400 = React.lazy(() => import("./pages/main/Error400"));
 const Error401 = React.lazy(() => import("./pages/main/Error401"));
@@ -33,12 +34,13 @@ const Loading = React.lazy(() => import("./components/Loading"));
 
 function App() {
   return (
-    <Suspense fallback={<Loading />}>
+    <ClinicProvider>
+      <Suspense fallback={<Loading />}>
       <Routes>
         <Route element={<MainLayout />}>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/customers" element={<Customers />} />
+          <Route path="/janji-temu" element={<JanjiTemu />} />
+          <Route path="/pasien" element={<Pasien />} />
           <Route path="/error/400" element={<Error400 />} />
           <Route path="/error/401" element={<Error401 />} />
           <Route path="/error/403" element={<Error403 />} />
@@ -51,7 +53,8 @@ function App() {
           <Route path="/forgot" element={<Forgot />} />
         </Route>
       </Routes>
-    </Suspense>
+      </Suspense>
+    </ClinicProvider>
   );
 }
 

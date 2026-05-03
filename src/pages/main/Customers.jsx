@@ -1,6 +1,13 @@
 import { useState } from "react";
-import PageHeader from "../components/PageHeader";
-import customersData from "../data/customers.json";
+import PageHeader from "../../components/PageHeader";
+
+const customersData = [
+  { id: "CUS-001", name: "Budi Santoso", email: "budi@email.com", phone: "081234567890", loyalty: "Gold" },
+  { id: "CUS-002", name: "Siti Rahayu", email: "siti@email.com", phone: "082345678901", loyalty: "Silver" },
+  { id: "CUS-003", name: "Andi Wijaya", email: "andi@email.com", phone: "083456789012", loyalty: "Bronze" },
+  { id: "CUS-004", name: "Dewi Kusuma", email: "dewi@email.com", phone: "084567890123", loyalty: "Gold" },
+  { id: "CUS-005", name: "Reza Firmansyah", email: "reza@email.com", phone: "085678901234", loyalty: "Silver" },
+];
 
 const LOYALTY_COLOR = {
   Gold: "bg-yellow-100 text-yellow-700",
@@ -28,12 +35,12 @@ export default function Customers() {
 
   return (
     <div className="flex flex-col w-full">
-      <PageHeader title="Customer" breadcrumb="Customer List">
+      <PageHeader title="Pasien" breadcrumb="Pasien List">
         <button
           onClick={() => setShowForm(true)}
           className="bg-hijau text-white px-4 py-2 rounded-xl font-semibold hover:opacity-90 transition"
         >
-          Add New Customer
+          Add New Pasien
         </button>
       </PageHeader>
 
@@ -41,10 +48,10 @@ export default function Customers() {
       {showForm && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-            <h2 className="text-xl font-bold text-gray-800 mb-6">Add New Customer</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-6">Add New Pasien</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-600">Customer Name</label>
+                <label className="text-sm font-medium text-gray-600">Pasien Name</label>
                 <input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
                   className="w-full mt-1 border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-hijau" />
               </div>
@@ -74,7 +81,7 @@ export default function Customers() {
                 </button>
                 <button type="submit"
                   className="px-4 py-2 rounded-xl bg-hijau text-white text-sm font-semibold hover:opacity-90">
-                  Save Customer
+                  Save Pasien
                 </button>
               </div>
             </form>
@@ -85,13 +92,13 @@ export default function Customers() {
       {/* Table */}
       <div className="mt-4 bg-white rounded-2xl shadow-sm border border-gray-50 overflow-hidden">
         <div className="p-6 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-800">All Customers</h2>
+          <h2 className="text-lg font-bold text-gray-800">All Pasien</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-gray-500 font-semibold">
               <tr>
-                <th className="px-6 py-3 text-left">Customer ID</th>
+                <th className="px-6 py-3 text-left">Pasien ID</th>
                 <th className="px-6 py-3 text-left">Name</th>
                 <th className="px-6 py-3 text-left">Email</th>
                 <th className="px-6 py-3 text-left">Phone</th>
