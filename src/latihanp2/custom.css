@@ -1,0 +1,73 @@
+/* Background */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+}
+
+/* Card utama */
+.card {
+    width: 350px;
+    margin: 50px auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+/* Foto profil */
+.profile-picture {
+    width: 70px;
+    height: 70px;
+    background-color: #4a7cff;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+    font-size: 28px;
+}
+
+/* Nama */
+.name h1 {
+    margin: 5px 0;
+    font-size: 18px;
+}
+
+.name p {
+    margin: 0;
+    font-size: 13px;
+    color: #666;
+}
+
+/* Info (NIM & alamat) */
+.info {
+    background: #f5f7fb;
+    margin: 8px 0;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+/* Tentang Saya */
+.tentang {
+    margin-top: 10px;
+    text-align: left;
+}
+
+.tentang h3 {
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.tentang p {
+    font-size: 13px;
+    color: #555;
+}
+
+/* Kontak */
+.contact {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #555;
+}

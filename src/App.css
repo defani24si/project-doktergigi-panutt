@@ -1,0 +1,42 @@
+.vite-default-root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.vite-default-root .logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.vite-default-root .logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.vite-default-root .logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .vite-default-root a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.vite-default-root .card {
+  padding: 2em;
+}
+
+.vite-default-root .read-the-docs {
+  color: #888;
+}

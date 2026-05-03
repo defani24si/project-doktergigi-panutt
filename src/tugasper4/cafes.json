@@ -1,0 +1,443 @@
+[
+  {
+    "id": 1,
+    "name": "Kopi Saat Subuh",
+    "category": "Coffee Shop",
+    "year": 2018,
+    "rating": 4.8,
+    "owner": "Budi Santoso",
+    "hours": "07:00 - 22:00",
+    "image": "cafe1.jpg",
+    "location": {
+      "city": "Bandung",
+      "address": "Jl. Braga No. 45, Bandung"
+    },
+    "menu": {
+      "specialty": "Manual Brew",
+      "bestSeller": "Vietnam Drip"
+      
+    },
+    "business": {
+      "investment": 350000000,
+      "monthlyRevenue": 85000000
+    }
+  },
+  {
+    "id": 2,
+    "name": "Second Shot",
+    "category": "Coffee Shop",
+    "year": 2020,
+    "rating": 4.9,
+    "owner": "Dewi Lestari",
+    "hours": "08:00 - 23:00",
+    "image": "cafe2.jpg",
+    "location": {
+      "city": "Jakarta",
+      "address": "Jl. Senopati No. 12, Jakarta Selatan"
+    },
+    "menu": {
+      "specialty": "Specialty Coffee",
+      "bestSeller": "Caramel Latte"
+    },
+    "business": {
+      "investment": 500000000,
+      "monthlyRevenue": 120000000
+    }
+  },
+  {
+    "id": 3,
+    "name": "Ruang Kenangan",
+    "category": "Coworking Cafe",
+    "year": 2019,
+    "rating": 4.7,
+    "owner": "Andi Wijaya",
+    "hours": "09:00 - 21:00",
+    "image": "cafe3.jpg",
+    "location": {
+      "city": "Surabaya",
+      "address": "Jl. Kayun No. 8, Surabaya"
+    },
+    "menu": {
+      "specialty": "Filter Coffee",
+      "bestSeller": "Signature Blend"
+    },
+    "business": {
+      "investment": 420000000,
+      "monthlyRevenue": 95000000
+    }
+  },
+  {
+    "id": 4,
+    "name": "Pause Coffee & Eatery",
+    "category": "Resto Cafe",
+    "year": 2021,
+    "rating": 4.6,
+    "owner": "Sari Kemala",
+    "hours": "10:00 - 22:00",
+    "image": "cafe4.jpg",
+    "location": {
+      "city": "Yogyakarta",
+      "address": "Jl. Prawirotaman No. 28, Yogyakarta"
+    },
+    "menu": {
+      "specialty": "Brunch",
+      "bestSeller": "Nasi Goreng Teri"
+    },
+    "business": {
+      "investment": 280000000,
+      "monthlyRevenue": 67000000
+    }
+  },
+  {
+    "id": 5,
+    "name": "Monolog Coffee",
+    "category": "Coffee Shop",
+    "year": 2017,
+    "rating": 4.5,
+    "owner": "Rina Hartono",
+    "hours": "07:00 - 21:00",
+    "image": "cafe5.jpg",
+    "location": {
+      "city": "Semarang",
+      "address": "Jl. Simpang Lima No. 5, Semarang"
+    },
+    "menu": {
+      "specialty": "Cold Brew",
+      "bestSeller": "Iced Americano"
+    },
+    "business": {
+      "investment": 310000000,
+      "monthlyRevenue": 72000000
+    }
+  },
+  {
+    "id": 6,
+    "name": "Tanpa Nama",
+    "category": "Hidden Gem Cafe",
+    "year": 2022,
+    "rating": 4.9,
+    "owner": "Gilang Prakoso",
+    "hours": "06:00 - 20:00",
+    "image": "cafe6.jpg",
+    "location": {
+      "city": "Malang",
+      "address": "Jl. Ijen No. 22, Malang"
+    },
+    "menu": {
+      "specialty": "Rustic Brew",
+      "bestSeller": "Kopi Tubruk"
+    },
+    "business": {
+      "investment": 195000000,
+      "monthlyRevenue": 48000000
+    }
+  },
+  {
+    "id": 7,
+    "name": "Gajah Duduk",
+    "category": "Resto Cafe",
+    "year": 2016,
+    "rating": 4.4,
+    "owner": "Putri Adelia",
+    "hours": "11:00 - 23:00",
+    "image": "cafe7.jpg",
+    "location": {
+      "city": "Jakarta",
+      "address": "Jl. Kemang Raya No. 78, Jakarta Selatan"
+    },
+    "menu": {
+      "specialty": "Western Food",
+      "bestSeller": "Steak & Fries"
+    },
+    "business": {
+      "investment": 650000000,
+      "monthlyRevenue": 155000000
+    }
+  },
+  {
+    "id": 8,
+    "name": "Biji Areng",
+    "category": "Coffee Shop",
+    "year": 2020,
+    "rating": 4.7,
+    "owner": "Hendra Setiawan",
+    "hours": "08:00 - 20:00",
+    "image": "cafe8.jpg",
+    "location": {
+      "city": "Bogor",
+      "address": "Jl. Suryakencana No. 14, Bogor"
+    },
+    "menu": {
+      "specialty": "Single Origin",
+      "bestSeller": "Toraja Sapan"
+    },
+    "business": {
+      "investment": 380000000,
+      "monthlyRevenue": 89000000
+    }
+  },
+  {
+    "id": 9,
+    "name": "Lorong Kopi",
+    "category": "Hidden Gem Cafe",
+    "year": 2021,
+    "rating": 4.8,
+    "owner": "Maya Sari",
+    "hours": "07:30 - 21:30",
+    "image": "cafe9.jpg",
+    "location": {
+      "city": "Bandung",
+      "address": "Jl. Trunojoyo No. 6, Bandung"
+    },
+    "menu": {
+      "specialty": "Arabica Blend",
+      "bestSeller": "Pandan Latte"
+    },
+    "business": {
+      "investment": 250000000,
+      "monthlyRevenue": 62000000
+    }
+  },
+  {
+    "id": 10,
+    "name": "Afterhour Workspace",
+    "category": "Coworking Cafe",
+    "year": 2022,
+    "rating": 4.6,
+    "owner": "Rizky Fadillah",
+    "hours": "09:00 - 00:00",
+    "image": "cafe10.jpg",
+    "location": {
+      "city": "Tangerang",
+      "address": "Jl. BSD Raya No. 3, Tangerang"
+    },
+    "menu": {
+      "specialty": "Power Coffee",
+      "bestSeller": "Espresso Double"
+    },
+    "business": {
+      "investment": 580000000,
+      "monthlyRevenue": 138000000
+    }
+  },
+  {
+    "id": 11,
+    "name": "Kedai Kita",
+    "category": "Traditional Cafe",
+    "year": 2015,
+    "rating": 4.3,
+    "owner": "Sumiati",
+    "hours": "06:00 - 18:00",
+    "image": "cafe11.jpg",
+    "location": {
+      "city": "Solo",
+      "address": "Jl. Slamet Riyadi No. 45, Solo"
+    },
+    "menu": {
+      "specialty": "Traditional Brew",
+      "bestSeller": "Kopi Jos"
+    },
+    "business": {
+      "investment": 120000000,
+      "monthlyRevenue": 35000000
+    }
+  },
+  {
+    "id": 12,
+    "name": "Brew & Co.",
+    "category": "Coffee Shop",
+    "year": 2023,
+    "rating": 4.8,
+    "owner": "Kevin Tanujaya",
+    "hours": "07:00 - 22:00",
+    "image": "cafe12.jpg",
+    "location": {
+      "city": "Denpasar",
+      "address": "Jl. Raya Kuta No. 88, Bali"
+    },
+    "menu": {
+      "specialty": "Signature Blend",
+      "bestSeller": "Brown Sugar Latte"
+    },
+    "business": {
+      "investment": 450000000,
+      "monthlyRevenue": 105000000
+    }
+  },
+  {
+    "id": 13,
+    "name": "Kala Senja Cafe",
+    "category": "Resto Cafe",
+    "year": 2020,
+    "rating": 4.5,
+    "owner": "Dina Fitriani",
+    "hours": "14:00 - 00:00",
+    "image": "cafe13.jpg",
+    "location": {
+      "city": "Bandung",
+      "address": "Jl. Dago No. 99, Bandung"
+    },
+    "menu": {
+      "specialty": "Sunset Menu",
+      "bestSeller": "Ribeye Steak"
+    },
+    "business": {
+      "investment": 520000000,
+      "monthlyRevenue": 128000000
+    }
+  },
+  {
+    "id": 14,
+    "name": "Kopi Nusantara",
+    "category": "Coffee Shop",
+    "year": 2019,
+    "rating": 4.7,
+    "owner": "Irfan Hakim",
+    "hours": "07:00 - 20:00",
+    "image": "cafe14.jpg",
+    "location": {
+      "city": "Medan",
+      "address": "Jl. Merdeka No. 33, Medan"
+    },
+    "menu": {
+      "specialty": "Local Beans",
+      "bestSeller": "Kopi Mandailing"
+    },
+    "business": {
+      "investment": 290000000,
+      "monthlyRevenue": 71000000
+    }
+  },
+  {
+    "id": 15,
+    "name": "Workhouse Coffee",
+    "category": "Coworking Cafe",
+    "year": 2021,
+    "rating": 4.6,
+    "owner": "Fajar Nugroho",
+    "hours": "08:00 - 22:00",
+    "image": "cafe15.jpg",
+    "location": {
+      "city": "Jakarta",
+      "address": "Jl. Sudirman No. 56, Jakarta Pusat"
+    },
+    "menu": {
+      "specialty": "Productivity Brew",
+      "bestSeller": "Long Black"
+    },
+    "business": {
+      "investment": 680000000,
+      "monthlyRevenue": 162000000
+    }
+  },
+  {
+    "id": 16,
+    "name": "Jalan Sunyi",
+    "category": "Hidden Gem Cafe",
+    "year": 2022,
+    "rating": 4.9,
+    "owner": "Nadia Paramita",
+    "hours": "10:00 - 22:00",
+    "image": "cafe16.jpg",
+    "location": {
+      "city": "Yogyakarta",
+      "address": "Jl. Tirtodipuran No. 12, Yogyakarta"
+    },
+    "menu": {
+      "specialty": "Slow Bar",
+      "bestSeller": "Chemex Pour Over"
+    },
+    "business": {
+      "investment": 210000000,
+      "monthlyRevenue": 54000000
+    }
+  },
+  {
+    "id": 17,
+    "name": "Batavia Coffee House",
+    "category": "Coffee Shop",
+    "year": 2016,
+    "rating": 4.4,
+    "owner": "William Chandra",
+    "hours": "08:00 - 21:00",
+    "image": "cafe17.jpg",
+    "location": {
+      "city": "Jakarta",
+      "address": "Jl. Pecenongan No. 27, Jakarta Pusat"
+    },
+    "menu": {
+      "specialty": "Dutch Blend",
+      "bestSeller": "Kopi Jahe"
+    },
+    "business": {
+      "investment": 340000000,
+      "monthlyRevenue": 82000000
+    }
+  },
+  {
+    "id": 18,
+    "name": "Langit Biru Cafe",
+    "category": "Resto Cafe",
+    "year": 2023,
+    "rating": 4.7,
+    "owner": "Sofia Ramadhani",
+    "hours": "11:00 - 23:00",
+    "image": "cafe18.jpg",
+    "location": {
+      "city": "Bali",
+      "address": "Jl. Pantai Berawa No. 15, Canggu"
+    },
+    "menu": {
+      "specialty": "Healthy Bowl",
+      "bestSeller": "Smoothie Bowl"
+    },
+    "business": {
+      "investment": 490000000,
+      "monthlyRevenue": 118000000
+    }
+  },
+  {
+    "id": 19,
+    "name": "Kedai 24 Jam",
+    "category": "Traditional Cafe",
+    "year": 2014,
+    "rating": 4.2,
+    "owner": "Ahmad Dahlan",
+    "hours": "24 Jam",
+    "image": "cafe19.jpg",
+    "location": {
+      "city": "Semarang",
+      "address": "Jl. Pemuda No. 7, Semarang"
+    },
+    "menu": {
+      "specialty": "Street Coffee",
+      "bestSeller": "Kopi Hitam"
+    },
+    "business": {
+      "investment": 95000000,
+      "monthlyRevenue": 28000000
+    }
+  },
+  {
+    "id": 20,
+    "name": "Cerita Kopi",
+    "category": "Coffee Shop",
+    "year": 2022,
+    "rating": 4.8,
+    "owner": "Rangga A.P.",
+    "hours": "07:00 - 21:00",
+    "image": "cafe20.jpg",
+    "location": {
+      "city": "Malang",
+      "address": "Jl. Candi No. 3, Malang"
+    },
+    "menu": {
+      "specialty": "Story Brew",
+      "bestSeller": "Cafe Latte Art"
+    },
+    "business": {
+      "investment": 330000000,
+      "monthlyRevenue": 79000000
+    }
+  }
+]
