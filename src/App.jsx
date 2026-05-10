@@ -21,6 +21,9 @@ const Dashboard = React.lazy(() => import("./pages/main/Dashboard"));
 const JanjiTemu = React.lazy(() => import("./pages/main/JanjiTemu"));
 const Header = React.lazy(() => import("./components/Header"));
 const Pasien = React.lazy(() => import("./pages/main/Pasien"));
+const PasienDetail = React.lazy(() => import("./pages/main/PasienDetail"));
+const Dokter = React.lazy(() => import("./pages/main/Dokter"));
+const DokterDetail = React.lazy(() => import("./pages/main/DokterDetail"));
 const NotFound = React.lazy(() => import("./pages/main/NotFound"));
 const Error400 = React.lazy(() => import("./pages/main/Error400"));
 const Error401 = React.lazy(() => import("./pages/main/Error401"));
@@ -41,6 +44,9 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/janji-temu" element={<JanjiTemu />} />
           <Route path="/pasien" element={<Pasien />} />
+          <Route path="/pasien/:id" element={<PasienDetail/>} />
+          <Route path="/dokter" element={<Dokter />} />
+          <Route path="/dokter/:id" element={<DokterDetail />} />
           <Route path="/error/400" element={<Error400 />} />
           <Route path="/error/401" element={<Error401 />} />
           <Route path="/error/403" element={<Error403 />} />

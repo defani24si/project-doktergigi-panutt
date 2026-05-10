@@ -1,5 +1,65 @@
 import React, { createContext, useContext, useState } from "react";
 
+const INITIAL_DOCTORS = [
+  {
+    id: "DK-001",
+    nama: "drg. Fikri (Umum)",
+    spesialis: "Umum",
+    noHp: "081211112222",
+    email: "fikri@dentiva.id",
+    jadwal: "Senin – Jumat, 08:00 – 16:00",
+    status: "Aktif",
+    riwayatPasien: [
+      { id: 1, tanggal: "2026-05-20", pasien: "Andi Pratama", tindakan: "Tambal Komposit" },
+      { id: 2, tanggal: "2026-04-15", pasien: "Bapak Wijaya", tindakan: "Odontektomi" }
+    ]
+  },
+  {
+    id: "DK-002",
+    nama: "drg. Anisa (Periodonti)",
+    spesialis: "Periodonti",
+    noHp: "081322223333",
+    email: "anisa@dentiva.id",
+    jadwal: "Selasa – Sabtu, 09:00 – 17:00",
+    status: "Aktif",
+    riwayatPasien: [
+      { id: 1, tanggal: "2026-05-01", pasien: "Siti Rahayu", tindakan: "Scaling" }
+    ]
+  },
+  {
+    id: "DK-003",
+    nama: "drg. Budi (Ortodonti)",
+    spesialis: "Ortodonti",
+    noHp: "081433334444",
+    email: "budi@dentiva.id",
+    jadwal: "Senin – Rabu, 10:00 – 16:00",
+    status: "Aktif",
+    riwayatPasien: []
+  },
+  {
+    id: "DK-004",
+    nama: "drg. Siti (Bedah Mulut)",
+    spesialis: "Bedah Mulut",
+    noHp: "081544445555",
+    email: "siti@dentiva.id",
+    jadwal: "Kamis – Sabtu, 08:00 – 14:00",
+    status: "Tidak Aktif",
+    riwayatPasien: []
+  },
+  {
+    id: "DK-005",
+    nama: "drg. Andi (Konservasi Gigi)",
+    spesialis: "Konservasi Gigi",
+    noHp: "081655556666",
+    email: "andi@dentiva.id",
+    jadwal: "Senin – Jumat, 13:00 – 20:00",
+    status: "Aktif",
+    riwayatPasien: [
+      { id: 1, tanggal: "2026-05-01", pasien: "Siti Rahayu", tindakan: "Tambal Komposit" }
+    ]
+  }
+];
+
 const INITIAL_PATIENTS = [
   {
     id: "PS-001",
@@ -114,9 +174,10 @@ const ClinicContext = createContext();
 export function ClinicProvider({ children }) {
   const [patients, setPatients] = useState(INITIAL_PATIENTS);
   const [appointments, setAppointments] = useState(INITIAL_APPOINTMENTS);
+  const [doctors, setDoctors] = useState(INITIAL_DOCTORS);
 
   return (
-    <ClinicContext.Provider value={{ patients, setPatients, appointments, setAppointments }}>
+    <ClinicContext.Provider value={{ patients, setPatients, appointments, setAppointments, doctors, setDoctors }}>
       {children}
     </ClinicContext.Provider>
   );

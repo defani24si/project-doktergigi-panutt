@@ -1,4 +1,4 @@
-import { FaListUl, FaUserFriends, FaPlus, FaSignOutAlt, FaExclamationTriangle, FaCalendarAlt } from "react-icons/fa";
+import { FaListUl, FaUserFriends, FaUserMd, FaPlus, FaSignOutAlt, FaExclamationTriangle, FaCalendarAlt } from "react-icons/fa";
 import { MdSpaceDashboard } from "react-icons/md";
 import { NavLink } from "react-router-dom";
 
@@ -46,6 +46,11 @@ export default function Sidebar() {
           <li>
             <NavLink to="/pasien" className={menuClass}>
               <FaUserFriends className="text-xl mr-3" /> Pasien
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/dokter" className={menuClass}>
+              <FaUserMd className="text-xl mr-3" /> Dokter
             </NavLink>
           </li>
 

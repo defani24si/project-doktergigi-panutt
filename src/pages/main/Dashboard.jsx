@@ -10,9 +10,9 @@ export default function Dashboard() {
   // Hitung Statistik
   const totalPasien = patients.length;
   const totalJanjiSelesai = appointments.filter(a => a.status === "Selesai").length;
-  
+
   // Kasus mendesak: misal layanan Cabut Gigi atau Odontektomi
-  const totalKasusMendesak = appointments.filter(a => 
+  const totalKasusMendesak = appointments.filter(a =>
     a.layanan.includes("Cabut") || a.layanan.includes("Odontektomi")
   ).length;
 
@@ -22,7 +22,7 @@ export default function Dashboard() {
 
   return (
     <div id="dashboard-container" className="p-2">
-      
+
       {/* Header + Filter */}
       <div className="flex justify-between items-center pr-5">
         <PageHeader title="Dashboard" breadcrumb="Overview" />
@@ -67,7 +67,7 @@ export default function Dashboard() {
 
       {/* RECENT ORDERS TABLE */}
       <div className="mx-5 mt-2 p-6 bg-white rounded-2xl shadow-sm border border-gray-50">
-        
+
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold text-gray-800">Kunjungan Terakhir</h3>
           <Link to="/janji-temu" className="text-blue-600 font-bold text-sm hover:text-blue-700 hover:underline">
@@ -77,7 +77,7 @@ export default function Dashboard() {
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            
+
             <thead>
               <tr className="text-gray-400 text-sm border-b border-gray-50">
                 <th className="pb-4 font-medium">ID Pasien</th>
@@ -91,26 +91,27 @@ export default function Dashboard() {
               {recentAppointments.map((appointment, index) => {
                 const color = appointment.status === 'Selesai' ? 'text-green-600' : appointment.status === 'Menunggu' ? 'text-yellow-500' : 'text-red-400';
                 return (
-                <tr
-                  key={index}
-                  className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
-                >
-                  <td className="py-4 font-bold text-gray-700">{appointment.id}</td>
+                  <tr
+                    key={index}
+                    className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="py-4 font-bold text-gray-700">{appointment.id}</td>
 
-                  <td className="py-4 flex items-center gap-3">
-                    <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                      <FaTooth />
-                    </div>
-                    {appointment.layanan}
-                  </td>
+                    <td className="py-4 flex items-center gap-3">
+                      <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                        <FaTooth />
+                      </div>
+                      {appointment.layanan}
+                    </td>
 
-                  <td className="py-4 text-gray-600">{appointment.pasienNama}</td>
+                    <td className="py-4 text-gray-600">{appointment.pasienNama}</td>
 
-                  <td className={`py-4 font-bold ${color}`}>
-                    {appointment.status}
-                  </td>
-                </tr>
-              )})}
+                    <td className={`py-4 font-bold ${color}`}>
+                      {appointment.status}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
 
           </table>

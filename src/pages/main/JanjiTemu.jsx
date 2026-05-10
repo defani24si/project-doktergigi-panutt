@@ -140,7 +140,7 @@ export default function JanjiTemu() {
         </button>
       </div>
 
-      {/* ===================== LIST VIEW ===================== */}
+      {/* LIST VIEW  */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
