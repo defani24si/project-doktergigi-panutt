@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -8,7 +9,6 @@ import {
   FaUserMd,
   FaStethoscope,
 } from "react-icons/fa";
-import PageHeader from "../../components/PageHeader";
 import { useClinic } from "../../context/ClinicContext";
 
 const BADGE_COLORS = {
@@ -27,7 +27,6 @@ const EMPTY_FORM = {
 
 export default function Dokter() {
   const { doctors, setDoctors } = useClinic();
-
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [showForm, setShowForm] = useState(false);
@@ -43,8 +42,7 @@ export default function Dokter() {
         d.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
         d.spesialis.toLowerCase().includes(searchTerm.toLowerCase()) ||
         d.id.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchStatus =
-        filterStatus === "Semua" || d.status === filterStatus;
+      const matchStatus = filterStatus === "Semua" || d.status === filterStatus;
       return matchSearch && matchStatus;
     });
   }, [doctors, searchTerm, filterStatus]);
@@ -78,8 +76,6 @@ export default function Dokter() {
 
   return (
     <div className="flex flex-col w-full pb-10">
-      <PageHeader title="Manajemen Dokter" breadcrumb="Daftar Dokter" />
-
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center space-x-4">
@@ -116,7 +112,6 @@ export default function Dokter() {
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition"
             />
           </div>
-
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
@@ -130,7 +125,10 @@ export default function Dokter() {
 
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center justify-center space-x-2 bg-teal-600 text-white px-5 py-2.5 rounded-xl font-medium hover:bg-teal-700 transition shadow-sm"
+          className="flex items-center justify-center space-x-2 text-white px-5 py-2.5 rounded-xl font-medium transition shadow-sm"
+          style={{ backgroundColor: "#f06b6b" }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e05555")}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#f06b6b")}
         >
           <FaPlus />
           <span>Tambah Dokter</span>
@@ -150,21 +148,19 @@ export default function Dokter() {
                 <th className="px-6 py-4">Jadwal Praktik</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-center">Aksi</th>
-              </tr>
+               </tr>
             </thead>
-
             <tbody className="divide-y divide-gray-50">
               {filteredDokter.length === 0 ? (
                 <tr>
                   <td colSpan="7" className="px-6 py-8 text-center text-gray-400">
                     Tidak ada data dokter ditemukan.
-                  </td>
+                   </td>
                 </tr>
               ) : (
                 filteredDokter.map((d) => (
                   <tr key={d.id} className="hover:bg-teal-50/50 transition duration-150">
                     <td className="px-6 py-4 font-medium text-gray-600">{d.id}</td>
-
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center font-bold text-lg flex-shrink-0">
@@ -181,11 +177,9 @@ export default function Dokter() {
                         </div>
                       </div>
                     </td>
-
                     <td className="px-6 py-4 text-gray-600">{d.spesialis}</td>
                     <td className="px-6 py-4 text-gray-600">{d.noHp}</td>
                     <td className="px-6 py-4 text-gray-500 text-xs">{d.jadwal}</td>
-
                     <td className="px-6 py-4">
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-semibold ${
@@ -195,7 +189,6 @@ export default function Dokter() {
                         {d.status}
                       </span>
                     </td>
-
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center">
                         <button
@@ -230,7 +223,9 @@ export default function Dokter() {
 
             <form onSubmit={handleSave} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nama Lengkap
+                </label>
                 <input
                   required
                   value={form.nama}
@@ -241,7 +236,9 @@ export default function Dokter() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Spesialis</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Spesialis
+                  </label>
                   <input
                     required
                     value={form.spesialis}
@@ -250,7 +247,9 @@ export default function Dokter() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Status
+                  </label>
                   <select
                     value={form.status}
                     onChange={(e) => setForm({ ...form, status: e.target.value })}
@@ -263,7 +262,9 @@ export default function Dokter() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nomor HP</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nomor HP
+                </label>
                 <input
                   required
                   value={form.noHp}
@@ -273,7 +274,9 @@ export default function Dokter() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
                 <input
                   type="email"
                   value={form.email}
@@ -283,7 +286,9 @@ export default function Dokter() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Jadwal Praktik</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Jadwal Praktik
+                </label>
                 <input
                   value={form.jadwal}
                   onChange={(e) => setForm({ ...form, jadwal: e.target.value })}
@@ -302,7 +307,10 @@ export default function Dokter() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-teal-600 text-white text-sm font-semibold hover:bg-teal-700 transition shadow-sm"
+                  className="px-5 py-2.5 rounded-xl text-white text-sm font-semibold transition shadow-sm"
+                  style={{ backgroundColor: "#f06b6b" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e05555")}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#f06b6b")}
                 >
                   Simpan Data
                 </button>

@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useClinic } from "../../context/ClinicContext";
 import {
@@ -28,7 +29,6 @@ export default function PasienDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { patients } = useClinic();
-
   const pasien = patients.find((p) => p.id === id);
 
   if (!pasien) {
@@ -38,10 +38,12 @@ export default function PasienDetail() {
         <p className="text-lg font-medium">Pasien tidak ditemukan.</p>
         <button
           onClick={() => navigate("/pasien")}
-          className="mt-2 flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition"
+          className="mt-2 flex items-center gap-2 px-5 py-2.5 text-white rounded-xl text-sm font-medium transition"
+          style={{ backgroundColor: "#f06b6b" }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e05555")}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#f06b6b")}
         >
-          <FaArrowLeft />
-          Kembali ke Daftar Pasien
+          <FaArrowLeft /> Kembali ke Daftar Pasien
         </button>
       </div>
     );
@@ -55,13 +57,11 @@ export default function PasienDetail() {
           onClick={() => navigate("/pasien")}
           className="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600 transition mb-4"
         >
-          <FaArrowLeft />
-          Kembali ke Daftar Pasien
+          <FaArrowLeft /> Kembali ke Daftar Pasien
         </button>
         <h1 className="text-2xl font-bold text-gray-800">Detail Pasien</h1>
         <p className="text-sm text-gray-400 mt-1">
-          ID:{" "}
-          <span className="font-semibold text-gray-600">{pasien.id}</span>
+          ID: <span className="font-semibold text-gray-600">{pasien.id}</span>
         </p>
       </div>
 
@@ -156,6 +156,7 @@ export default function PasienDetail() {
           <FaClipboardList className="text-blue-500" />
           <h3 className="text-sm font-bold text-gray-700">Riwayat Medis</h3>
         </div>
+
         {pasien.riwayatMedis && pasien.riwayatMedis.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
@@ -192,6 +193,7 @@ export default function PasienDetail() {
           <FaCalendarAlt className="text-purple-500" />
           <h3 className="text-sm font-bold text-gray-700">Riwayat Janji Temu</h3>
         </div>
+
         {pasien.riwayatJanji && pasien.riwayatJanji.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
@@ -210,7 +212,11 @@ export default function PasienDetail() {
                     <td className="px-5 py-3 text-gray-600">{item.jam}</td>
                     <td className="px-5 py-3 text-gray-700">{item.dokter}</td>
                     <td className="px-5 py-3">
-                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${STATUS_JANJI[item.status] || "bg-gray-100 text-gray-600"}`}>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                          STATUS_JANJI[item.status] || "bg-gray-100 text-gray-600"
+                        }`}
+                      >
                         {item.status}
                       </span>
                     </td>

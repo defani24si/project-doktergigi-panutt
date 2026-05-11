@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useClinic } from "../../context/ClinicContext";
 import {
@@ -20,7 +21,6 @@ export default function DokterDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { doctors } = useClinic();
-
   const dokter = doctors.find((d) => d.id === id);
 
   if (!dokter) {
@@ -30,10 +30,12 @@ export default function DokterDetail() {
         <p className="text-lg font-medium">Dokter tidak ditemukan.</p>
         <button
           onClick={() => navigate("/dokter")}
-          className="mt-2 flex items-center gap-2 px-5 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-medium hover:bg-teal-700 transition"
+          className="mt-2 flex items-center gap-2 px-5 py-2.5 text-white rounded-xl text-sm font-medium transition"
+          style={{ backgroundColor: "#f06b6b" }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e05555")}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#f06b6b")}
         >
-          <FaArrowLeft />
-          Kembali ke Daftar Dokter
+          <FaArrowLeft /> Kembali ke Daftar Dokter
         </button>
       </div>
     );
@@ -47,13 +49,11 @@ export default function DokterDetail() {
           onClick={() => navigate("/dokter")}
           className="flex items-center gap-2 text-sm text-gray-500 hover:text-teal-600 transition mb-4"
         >
-          <FaArrowLeft />
-          Kembali ke Daftar Dokter
+          <FaArrowLeft /> Kembali ke Daftar Dokter
         </button>
         <h1 className="text-2xl font-bold text-gray-800">Detail Dokter</h1>
         <p className="text-sm text-gray-400 mt-1">
-          ID:{" "}
-          <span className="font-semibold text-gray-600">{dokter.id}</span>
+          ID: <span className="font-semibold text-gray-600">{dokter.id}</span>
         </p>
       </div>
 

@@ -1,91 +1,105 @@
-import { FaBell, FaSearch, FaClock } from "react-icons/fa";
-import { FcAreaChart } from "react-icons/fc";
-import { SlSettings } from "react-icons/sl";
+import { FaBell, FaSearch, FaCommentDots } from "react-icons/fa";
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+
+const ROUTE_TITLES = {
+  "/":            { label: "Dashboard",         highlight: "Dash",       rest: "board" },
+  "/janji-temu":  { label: "Janji Temu",         highlight: "Janji",      rest: " Temu" },
+  "/pasien":      { label: "Manajemen Pasien",   highlight: "Manajemen",  rest: " Pasien" },
+  "/dokter":      { label: "Manajemen Dokter",   highlight: "Manajemen",  rest: " Dokter" },
+  "/error/400":   { label: "Error 400",          highlight: "Error",      rest: " 400" },
+  "/error/401":   { label: "Error 401",          highlight: "Error",      rest: " 401" },
+  "/error/403":   { label: "Error 403",          highlight: "Error",      rest: " 403" },
+};
+
+function getTitle(pathname) {
+  // exact match first
+  if (ROUTE_TITLES[pathname]) return ROUTE_TITLES[pathname];
+  // prefix match (e.g. /pasien/123)
+  const prefix = Object.keys(ROUTE_TITLES)
+    .filter((k) => k !== "/" && pathname.startsWith(k))
+    .sort((a, b) => b.length - a.length)[0];
+  return prefix ? ROUTE_TITLES[prefix] : { label: "Dashboard", highlight: "Dash", rest: "board" };
+}
 
 export default function Header() {
   const [time, setTime] = useState(new Date());
+  const location = useLocation();
+  const { highlight, rest } = getTitle(location.pathname);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTime(new Date());
-    }, 1000);
-
+    const interval = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
 
-  return (
-    <div id="header-container" className="flex justify-between items-center p-4">
+  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const dayName = days[time.getDay()];
+  const dateStr = `${String(time.getDate()).padStart(2,"0")}/${String(time.getMonth()+1).padStart(2,"0")}/${time.getFullYear()}`;
 
-      {/* Search Bar */}
-      <div id="search-bar" className="relative w-full max-w-lg">
-        <input
-          id="search-input"
-          type="text"
-          placeholder="Search Here..."
-          className="border border-gray-100 p-2 pr-10 bg-white w-full rounded-md outline-none shadow-sm"
-        />
-        <FaSearch
-          id="search-icon"
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-300"
-        />
+  return (
+    <div
+      id="header-container"
+      className="flex justify-between items-center px-6 py-3 bg-white border-b border-gray-100 shadow-sm"
+    >
+      {/* Left: Dynamic Title */}
+      <div className="flex items-center">
+        <h1 className="text-2xl font-bold text-gray-800">
+          <span style={{ color: "#f06b6b" }}>{highlight}</span>
+          {rest}
+        </h1>
       </div>
 
-      {/* Icon & Profile Section */}
-      <div id="icons-container" className="flex items-center space-x-4">
-
-        {/* ⏰ JAM */}
-        <div
-          id="clock-container"
-          className="flex items-center space-x-2 text-sm text-gray-500"
+      {/* Center: Search Bar */}
+      <div className="relative w-full max-w-md mx-6">
+        <input
+          type="text"
+          placeholder="Search your task here..."
+          className="border border-gray-200 p-2 pl-4 pr-10 bg-gray-50 w-full rounded-full outline-none text-sm text-gray-600 placeholder-gray-400 focus:border-red-300 transition-colors"
+        />
+        <button
+          className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center text-white"
+          style={{ backgroundColor: "#f06b6b" }}
         >
-          <FaClock />
-          <span id="clock-text">{time.toLocaleTimeString()}</span>
+          <FaSearch size={12} />
+        </button>
+      </div>
+
+      {/* Right: Icons + Date */}
+      <div className="flex items-center space-x-2">
+        {/* Notification */}
+        <button
+          className="w-9 h-9 rounded-lg flex items-center justify-center text-white transition-opacity hover:opacity-85"
+          style={{ backgroundColor: "#f06b6b" }}
+          title="Notifikasi"
+        >
+          <FaBell size={15} />
+        </button>
+
+        {/* Messages */}
+        <button
+          className="w-9 h-9 rounded-lg flex items-center justify-center text-white transition-opacity hover:opacity-85"
+          style={{ backgroundColor: "#f06b6b" }}
+          title="Pesan"
+        >
+          <FaCommentDots size={15} />
+        </button>
+
+        {/* Date */}
+        <div className="text-right ml-2 pl-2 border-l border-gray-200">
+          <p className="text-xs font-semibold text-gray-700">{dayName}</p>
+          <p className="text-xs font-bold" style={{ color: "#f06b6b" }}>{dateStr}</p>
         </div>
 
-        {/* 🔔 Notification */}
-        <div
-          id="notification-icon"
-          className="relative p-3 bg-blue-100 rounded-2xl text-blue-500 cursor-pointer"
-        >
-          <FaBell />
-          <span
-            id="notification-badge"
-            className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-blue-500 text-white rounded-full px-1.5 py-0.5 text-[10px] border-2 border-white"
-          >
-            50
-          </span>
-        </div>
-
-        {/* 📊 Chart */}
-        <div
-          id="chart-icon"
-          className="p-3 bg-blue-100 rounded-2xl cursor-pointer"
-        >
-          <FcAreaChart />
-        </div>
-
-        {/* ⚙️ Settings */}
-        <div
-          id="settings-icon"
-          className="p-3 bg-red-100 rounded-2xl text-red-500 cursor-pointer"
-        >
-          <SlSettings />
-        </div>
-
-        {/* Profile Section */}
-        <div
-          id="profile-container"
-          className="flex items-center space-x-4 border-l pl-4 border-gray-300"
-        >
-          <span id="profile-text" className="text-gray-700">
-            Hello, <b className="font-bold">panutt</b>
-          </span>
+        {/* User */}
+        <div className="flex items-center gap-2 ml-2 pl-2 border-l border-gray-200">
+          <div className="text-right">
+            <p className="text-xs font-semibold text-gray-700">Panutt Admin</p>
+            <p className="text-[10px] text-gray-400">admin@panutt.com</p>
+          </div>
           <img
-            id="profile-avatar"
             src="https://avatar.iran.liara.run/public/28"
-            className="w-10 h-10 rounded-full"
-            alt="profile"
+            alt="avatar"
+            className="w-8 h-8 rounded-full object-cover flex-shrink-0"
           />
         </div>
       </div>
