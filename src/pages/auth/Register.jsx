@@ -1,5 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import InputField from "../../components/InputField";
+import Button from "../../components/Button";
+import Alert from "../../components/Alert";
+import Checkbox from "../../components/Checkbox";
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -12,6 +16,7 @@ export default function Register() {
   });
   const [agreed, setAgreed] = useState(false);
   const [errors, setErrors] = useState({});
+  const [success, setSuccess] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,7 +46,7 @@ export default function Register() {
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
     } else {
-      console.log("Form submitted:", form);
+      setSuccess(true);
     }
   };
 
@@ -55,73 +60,58 @@ export default function Register() {
   ];
 
   return (
-    <div 
-      className="max-w-md mx-auto p-6 rounded-xl shadow-md"
-      style={{ backgroundColor: "#f0b6b6" }}
-    >
-      <div className="bg-white rounded-lg p-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-1">Daftar</h2>
-        <p className="text-sm text-gray-500 mb-6">Buat akun baru Anda</p>
+    <>
+      <h2 className="text-2xl font-bold text-gray-800 mb-1">Daftar</h2>
+      <p className="text-sm text-gray-500 mb-6">Buat akun baru Anda</p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {fields.map((f) => (
-            <div key={f.name}>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {f.label}
-              </label>
-              <input
-                type={f.type}
-                name={f.name}
-                value={form[f.name]}
-                onChange={handleChange}
-                placeholder={f.placeholder}
-                className={`w-full border rounded-lg px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-opacity-50 ${
-                  errors[f.name]
-                    ? "border-red-500 focus:border-red-500 focus:ring-red-200"
-                    : "border-gray-300 focus:border-gray-400 focus:ring-gray-200"
-                }`}
-              />
-              {errors[f.name] && (
-                <p className="text-red-500 text-xs mt-1">{errors[f.name]}</p>
-              )}
-            </div>
-          ))}
+      {success && (
+        <div className="mb-4">
+          <Alert type="success">
+            Pendaftaran berhasil! Silakan masuk ke akun Anda.
+          </Alert>
+        </div>
+      )}
 
-          <div className="flex items-center gap-2 pt-1">
-            <input
-              type="checkbox"
-              id="terms"
-              checked={agreed}
-              onChange={(e) => {
-                setAgreed(e.target.checked);
-                if (errors.terms) setErrors({ ...errors, terms: "" });
-              }}
-              className="w-4 h-4 cursor-pointer accent-red-400"
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {fields.map((f) => (
+          <div key={f.name}>
+            <InputField
+              label={f.label}
+              type={f.type}
+              name={f.name}
+              value={form[f.name]}
+              onChange={handleChange}
+              placeholder={f.placeholder}
             />
-            <label htmlFor="terms" className="text-sm text-gray-600 cursor-pointer">
-              Saya setuju dengan syarat dan ketentuan
-            </label>
+            {errors[f.name] && (
+              <p className="text-red-500 text-xs mt-1">{errors[f.name]}</p>
+            )}
           </div>
+        ))}
+
+        <div>
+          <Checkbox
+            label="Saya setuju dengan syarat dan ketentuan"
+            checked={agreed}
+            onChange={(e) => {
+              setAgreed(e.target.checked);
+              if (errors.terms) setErrors({ ...errors, terms: "" });
+            }}
+          />
           {errors.terms && (
-            <p className="text-red-500 text-xs -mt-2">{errors.terms}</p>
+            <p className="text-red-500 text-xs mt-1">{errors.terms}</p>
           )}
+        </div>
 
-          <button
-            type="submit"
-            className="w-full py-2.5 rounded-lg text-white text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
-            style={{ backgroundColor: "#f06b6b" }}
-          >
-            Daftar
-          </button>
-        </form>
+        <Button type="primary">Daftar</Button>
+      </form>
 
-        <p className="text-sm text-gray-500 text-center mt-6">
-          Sudah punya akun?{" "}
-          <Link to="/login" className="font-medium hover:underline" style={{ color: "#f06b6b" }}>
-            Masuk
-          </Link>
-        </p>
-      </div>
-    </div>
+      <p className="text-sm text-gray-500 text-center mt-6">
+        Sudah punya akun?{" "}
+        <Link to="/login" className="font-medium hover:underline" style={{ color: "#f06b6b" }}>
+          Masuk
+        </Link>
+      </p>
+    </>
   );
 }

@@ -3,29 +3,27 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 const ROUTE_TITLES = {
-  "/":            { label: "Dashboard",         highlight: "Dash",       rest: "board" },
-  "/janji-temu":  { label: "Janji Temu",         highlight: "Janji",      rest: " Temu" },
-  "/pasien":      { label: "Manajemen Pasien",   highlight: "Manajemen",  rest: " Pasien" },
-  "/dokter":      { label: "Manajemen Dokter",   highlight: "Manajemen",  rest: " Dokter" },
-  "/error/400":   { label: "Error 400",          highlight: "Error",      rest: " 400" },
-  "/error/401":   { label: "Error 401",          highlight: "Error",      rest: " 401" },
-  "/error/403":   { label: "Error 403",          highlight: "Error",      rest: " 403" },
+  "/":            { label: "Dashboard",         highlight: "Dash",       rest: "board",   breadcrumb: "Overview" },
+  "/janji-temu":  { label: "Janji Temu",         highlight: "Janji",      rest: " Temu",   breadcrumb: "Janji Temu" },
+  "/pasien":      { label: "Manajemen Pasien",   highlight: "Manajemen",  rest: " Pasien", breadcrumb: "Pasien" },
+  "/dokter":      { label: "Manajemen Dokter",   highlight: "Manajemen",  rest: " Dokter", breadcrumb: "Dokter" },
+  "/error/400":   { label: "Error 400",          highlight: "Error",      rest: " 400",    breadcrumb: "400" },
+  "/error/401":   { label: "Error 401",          highlight: "Error",      rest: " 401",    breadcrumb: "401" },
+  "/error/403":   { label: "Error 403",          highlight: "Error",      rest: " 403",    breadcrumb: "403" },
 };
 
 function getTitle(pathname) {
-  // exact match first
   if (ROUTE_TITLES[pathname]) return ROUTE_TITLES[pathname];
-  // prefix match (e.g. /pasien/123)
   const prefix = Object.keys(ROUTE_TITLES)
     .filter((k) => k !== "/" && pathname.startsWith(k))
     .sort((a, b) => b.length - a.length)[0];
-  return prefix ? ROUTE_TITLES[prefix] : { label: "Dashboard", highlight: "Dash", rest: "board" };
+  return prefix ? ROUTE_TITLES[prefix] : { label: "Dashboard", highlight: "Dash", rest: "board", breadcrumb: "Overview" };
 }
 
 export default function Header() {
   const [time, setTime] = useState(new Date());
   const location = useLocation();
-  const { highlight, rest } = getTitle(location.pathname);
+  const { highlight, rest, breadcrumb } = getTitle(location.pathname);
 
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);
@@ -41,12 +39,17 @@ export default function Header() {
       id="header-container"
       className="flex justify-between items-center px-6 py-3 bg-white border-b border-gray-100 shadow-sm"
     >
-      {/* Left: Dynamic Title */}
-      <div className="flex items-center">
-        <h1 className="text-2xl font-bold text-gray-800">
+      {/* Left: Dynamic Title + Breadcrumb */}
+      <div className="flex flex-col justify-center">
+        <h1 className="text-xl font-bold text-gray-800 leading-tight">
           <span style={{ color: "#f06b6b" }}>{highlight}</span>
           {rest}
         </h1>
+        <div className="flex items-center space-x-1 text-xs mt-0.5">
+          <span className="text-gray-400">Dashboard</span>
+          <span className="text-gray-300">/</span>
+          <span className="text-gray-400">{breadcrumb}</span>
+        </div>
       </div>
 
       {/* Center: Search Bar */}

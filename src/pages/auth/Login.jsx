@@ -1,6 +1,10 @@
 import axios from "axios";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import InputField from "../../components/InputField";
+import Button from "../../components/Button";
+import Alert from "../../components/Alert";
+import { FaUser, FaLock } from "react-icons/fa";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -33,82 +37,56 @@ export default function Login() {
   };
 
   return (
-    <div
-      className="max-w-md mx-auto p-6 rounded-xl shadow-md"
-      style={{ backgroundColor: "#f0b6b6" }}
-    >
-      <div className="bg-white rounded-lg p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-1">Masuk</h2>
-        <p className="text-sm text-gray-500 mb-6">Silakan masuk ke akun Anda</p>
+    <>
+      <h2 className="text-xl font-bold text-gray-800 mb-1">Masuk</h2>
+      <p className="text-sm text-gray-500 mb-6">Silakan masuk ke akun Anda</p>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg px-4 py-3 mb-4">
+      {error && (
+        <div className="mb-4">
+          <Alert type="danger" onClose={() => setError("")}>
             {error}
-          </div>
-        )}
+          </Alert>
+        </div>
+      )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Username
-            </label>
-            <input
-              type="text"
-              name="email"
-              value={dataForm.email}
-              onChange={handleChange}
-              placeholder="Masukkan username"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-200 transition-colors"
-              required
-            />
-          </div>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <InputField
+          label="Username"
+          type="text"
+          name="email"
+          value={dataForm.email}
+          onChange={handleChange}
+          placeholder="Masukkan username"
+          icon={<FaUser />}
+        />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={dataForm.password}
-              onChange={handleChange}
-              placeholder="Masukkan password"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-200 transition-colors"
-              required
-            />
-          </div>
+        <InputField
+          label="Password"
+          type="password"
+          name="password"
+          value={dataForm.password}
+          onChange={handleChange}
+          placeholder="Masukkan password"
+          icon={<FaLock />}
+        />
 
-          <div className="text-right">
-            <Link
-              to="/forgot"
-              className="text-xs text-gray-500 hover:underline"
-              style={{ color: "#f06b6b" }}
-            >
-              Lupa password?
-            </Link>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2 rounded-lg text-white text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100"
-            style={{ backgroundColor: "#f06b6b" }}
-          >
-            {loading ? "Memproses..." : "Masuk"}
-          </button>
-        </form>
-
-        <p className="text-sm text-gray-500 text-center mt-6">
-          Belum punya akun?{" "}
-          <Link
-            to="/register"
-            className="font-medium hover:underline"
-            style={{ color: "#f06b6b" }}
-          >
-            Daftar
+        <div className="text-right">
+          <Link to="/forgot" className="text-xs hover:underline" style={{ color: "#f06b6b" }}>
+            Lupa password?
           </Link>
-        </p>
-      </div>
-    </div>
+        </div>
+
+        <Button type="primary" onClick={handleSubmit}>
+          {loading ? "Memproses..." : "Masuk"}
+        </Button>
+      </form>
+
+      <p className="text-sm text-gray-500 text-center mt-6">
+        Belum punya akun?{" "}
+        <Link to="/register" className="font-medium hover:underline" style={{ color: "#f06b6b" }}>
+          Daftar
+        </Link>
+      </p>
+    </>
   );
 }

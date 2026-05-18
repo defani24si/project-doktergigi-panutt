@@ -1,18 +1,17 @@
-
 import { useState, useMemo } from "react";
-import {
-  FaPlus,
-  FaSearch,
-  FaEye,
-  FaEdit,
-  FaTimes,
-  FaCalendarAlt,
-  FaListUl,
-  FaCheck,
-  FaBan,
-  FaCalendarDay,
-} from "react-icons/fa";
+import { FaPlus, FaSearch, FaCalendarDay } from "react-icons/fa";
 import { useClinic } from "../../context/ClinicContext";
+import Card from "../../components/Card";
+import Badge from "../../components/Badge";
+import Button from "../../components/Button";
+import InputField from "../../components/InputField";
+import Modal from "../../components/Modal";
+import PageHeader from "../../components/PageHeader";
+import SelectField from "../../components/SelectField";
+import TextArea from "../../components/TextArea";
+import Alert from "../../components/Alert";
+import Table from "../../components/Table";
+import Checkbox from "../../components/Checkbox";
 
 const DOKTER_LIST = [
   "drg. Budi (Ortodonti)",
@@ -21,23 +20,18 @@ const DOKTER_LIST = [
   "drg. Fikri (Umum)",
 ];
 
-const STATUS_COLORS = {
-  Menunggu: "bg-yellow-100 text-yellow-700",
-  Selesai: "bg-green-100 text-green-700",
-  Dibatalkan: "bg-red-100 text-red-700",
-};
-
 const LAYANAN_LIST = [
-  "Konsultasi",
-  "Scaling Gigi",
-  "Tambal Komposit",
-  "Cabut Gigi",
-  "Odontektomi",
-  "Kawat Gigi",
+  "Konsultasi", "Scaling Gigi", "Tambal Komposit",
+  "Cabut Gigi", "Odontektomi", "Kawat Gigi",
 ];
 
-// Generate time slots (08:00 - 16:00)
 const TIME_SLOTS = Array.from({ length: 9 }, (_, i) => `${String(i + 8).padStart(2, "0")}:00`);
+
+const STATUS_BADGE = {
+  Menunggu: "warning",
+  Selesai: "success",
+  Dibatalkan: "danger",
+};
 
 export default function JanjiTemu() {
   const { appointments, setAppointments, patients } = useClinic();
@@ -45,18 +39,17 @@ export default function JanjiTemu() {
   const [filterTanggal, setFilterTanggal] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [showForm, setShowForm] = useState(false);
-
-  // Form State
+  const [successAlert, setSuccessAlert] = useState("");
+  const [reminderChecked, setReminderChecked] = useState(false);
   const [form, setForm] = useState({
-    pasienId: "",
-    dokterNama: "",
+    pasienId: "", dokterNama: "",
     tanggal: new Date().toISOString().split("T")[0],
-    jam: "",
-    layanan: "",
-    keluhan: "",
+    jam: "", layanan: "", keluhan: "",
   });
 
-  // Derived filtered appointments
+  const totalMenunggu = appointments.filter((a) => a.status === "Menunggu").length;
+  const totalSelesai = appointments.filter((a) => a.status === "Selesai").length;
+
   const filteredAppointments = useMemo(() => {
     return appointments
       .filter((apt) => {
@@ -67,30 +60,20 @@ export default function JanjiTemu() {
         const matchDate = filterTanggal === "" || apt.tanggal === filterTanggal;
         return matchSearch && matchStatus && matchDate;
       })
-      .sort((a, b) => {
-        if (a.tanggal === b.tanggal) return a.jam.localeCompare(b.jam);
-        return a.tanggal.localeCompare(b.tanggal);
-      });
+      .sort((a, b) => a.tanggal === b.tanggal ? a.jam.localeCompare(b.jam) : a.tanggal.localeCompare(b.tanggal));
   }, [appointments, searchTerm, filterStatus, filterTanggal]);
 
-  // Check available slots
   const getAvailableSlots = (tanggal, dokter) => {
-    const bookedSlots = appointments
-      .filter(
-        (apt) =>
-          apt.tanggal === tanggal && apt.dokterNama === dokter && apt.status !== "Dibatalkan"
-      )
+    const booked = appointments
+      .filter((apt) => apt.tanggal === tanggal && apt.dokterNama === dokter && apt.status !== "Dibatalkan")
       .map((apt) => apt.jam);
-    return TIME_SLOTS.map((slot) => ({
-      time: slot,
-      isAvailable: !bookedSlots.includes(slot),
-    }));
+    return TIME_SLOTS.map((slot) => ({ time: slot, isAvailable: !booked.includes(slot) }));
   };
 
-  const handleSaveJanji = (e) => {
+  const handleSave = (e) => {
     e.preventDefault();
     const pasien = patients.find((p) => p.id === form.pasienId);
-    const newApt = {
+    const newAppt = {
       id: `JT-${String(appointments.length + 1).padStart(3, "0")}`,
       pasienId: form.pasienId,
       pasienNama: pasien ? pasien.nama : "Unknown",
@@ -101,16 +84,12 @@ export default function JanjiTemu() {
       keluhan: form.keluhan,
       status: "Menunggu",
     };
-    setAppointments([...appointments, newApt]);
+    setAppointments([...appointments, newAppt]);
+    setSuccessAlert(`Janji temu untuk ${newAppt.pasienNama} berhasil dibuat.`);
     setShowForm(false);
-    setForm({
-      pasienId: "",
-      dokterNama: "",
-      tanggal: new Date().toISOString().split("T")[0],
-      jam: "",
-      layanan: "",
-      keluhan: "",
-    });
+    setReminderChecked(false);
+    setForm({ pasienId: "", dokterNama: "", tanggal: new Date().toISOString().split("T")[0], jam: "", layanan: "", keluhan: "" });
+    setTimeout(() => setSuccessAlert(""), 4000);
   };
 
   const updateStatus = (id, newStatus) => {
@@ -119,286 +98,199 @@ export default function JanjiTemu() {
 
   return (
     <div className="flex flex-col w-full pb-10">
+      {/* Page Header */}
+      <PageHeader title="Janji Temu" breadcrumb={["Jadwal"]}>
+        <Button type="primary" icon={<FaPlus />} onClick={() => setShowForm(true)}>
+          Buat Janji
+        </Button>
+      </PageHeader>
+
+      {/* Success Alert */}
+      {successAlert && (
+        <div className="mb-4">
+          <Alert type="success" onClose={() => setSuccessAlert("")}>
+            {successAlert}
+          </Alert>
+        </div>
+      )}
+
+      {/* Stat Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <Card>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-yellow-50 text-yellow-600 rounded-full flex items-center justify-center text-xl">
+              <FaCalendarDay />
+            </div>
+            <div>
+              <p className="text-gray-500 text-sm font-medium">Menunggu</p>
+              <h3 className="text-2xl font-bold text-gray-800">{totalMenunggu}</h3>
+            </div>
+          </div>
+        </Card>
+        <Card>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center text-xl">
+              <FaCalendarDay />
+            </div>
+            <div>
+              <p className="text-gray-500 text-sm font-medium">Selesai</p>
+              <h3 className="text-2xl font-bold text-gray-800">{totalSelesai}</h3>
+            </div>
+          </div>
+        </Card>
+      </div>
+
       {/* Toolbar */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row justify-between gap-4">
-        <div className="flex flex-wrap gap-4 w-full md:w-auto">
-          {/* Search */}
-          <div className="relative w-full md:w-56">
-            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
+      <Card className="mb-6">
+        <div className="flex flex-col md:flex-row justify-between gap-4">
+          <div className="flex flex-wrap gap-3 w-full md:w-auto">
+            <InputField
               placeholder="Cari pasien / dokter..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              icon={<FaSearch />}
+            />
+            <SelectField
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              options={[
+                { value: "Semua", label: "Semua Status" },
+                { value: "Menunggu", label: "Menunggu" },
+                { value: "Selesai", label: "Selesai" },
+                { value: "Dibatalkan", label: "Dibatalkan" },
+              ]}
+            />
+            <input
+              type="date"
+              value={filterTanggal}
+              onChange={(e) => setFilterTanggal(e.target.value)}
+              className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f06b6b] text-gray-600"
+            />
+          </div>
+        </div>
+      </Card>
+
+      {/* Table */}
+      <Card>
+        <Table headers={["ID", "Pasien", "Dokter", "Tgl & Jam", "Layanan", "Status", "Aksi"]}>
+          {filteredAppointments.length === 0 ? (
+            <tr>
+              <td colSpan="7" className="p-8 text-center text-gray-400">
+                Tidak ada jadwal ditemukan.
+              </td>
+            </tr>
+          ) : (
+            filteredAppointments.map((apt) => (
+              <tr key={apt.id} className="hover:bg-gray-50 transition text-sm">
+                <td className="px-4 py-4 font-medium text-gray-600">{apt.id}</td>
+                <td className="px-4 py-4 font-semibold text-gray-800">{apt.pasienNama}</td>
+                <td className="px-4 py-4 text-gray-600">{apt.dokterNama}</td>
+                <td className="px-4 py-4 text-gray-600">
+                  <span className="font-medium">{apt.tanggal}</span>
+                  <p className="text-xs text-gray-400 flex items-center mt-1">
+                    <FaCalendarDay className="mr-1" /> {apt.jam}
+                  </p>
+                </td>
+                <td className="px-4 py-4 text-gray-600">{apt.layanan}</td>
+                <td className="px-4 py-4">
+                  <Badge type={STATUS_BADGE[apt.status]}>{apt.status}</Badge>
+                </td>
+                <td className="px-4 py-4 text-center">
+                  {apt.status === "Menunggu" ? (
+                    <select
+                      value=""
+                      onChange={(e) => { if (e.target.value) updateStatus(apt.id, e.target.value); }}
+                      className="px-2 py-1 text-xs border border-gray-200 rounded-lg focus:outline-none bg-white text-gray-600"
+                    >
+                      <option value="" disabled>Aksi...</option>
+                      <option value="Selesai">Selesai</option>
+                      <option value="Dibatalkan">Batalkan</option>
+                    </select>
+                  ) : (
+                    <span className="text-gray-400">-</span>
+                  )}
+                </td>
+              </tr>
+            ))
+          )}
+        </Table>
+      </Card>
+
+      {/* Modal */}
+      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title="Buat Janji Temu Baru">
+        <form onSubmit={handleSave} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <SelectField
+              label="Pilih Pasien"
+              value={form.pasienId}
+              onChange={(e) => setForm({ ...form, pasienId: e.target.value })}
+              options={patients.map((p) => ({ value: p.id, label: `${p.id} - ${p.nama}` }))}
+            />
+            <SelectField
+              label="Pilih Dokter"
+              value={form.dokterNama}
+              onChange={(e) => setForm({ ...form, dokterNama: e.target.value, jam: "" })}
+              options={DOKTER_LIST.map((d) => ({ value: d, label: d }))}
             />
           </div>
 
-          {/* Filter Status */}
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-500"
-          >
-            <option value="Semua">Semua Status</option>
-            <option value="Menunggu">Menunggu</option>
-            <option value="Selesai">Selesai</option>
-            <option value="Dibatalkan">Dibatalkan</option>
-          </select>
-
-          {/* Filter Tanggal */}
-          <input
-            type="date"
-            value={filterTanggal}
-            onChange={(e) => setFilterTanggal(e.target.value)}
-            className="px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 text-gray-600"
-          />
-        </div>
-
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center justify-center space-x-2 text-white px-5 py-2.5 rounded-xl font-medium transition shadow-sm whitespace-nowrap"
-          style={{ backgroundColor: "#f06b6b" }}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e05555")}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#f06b6b")}
-        >
-          <FaPlus />
-          <span>Buat Janji</span>
-        </button>
-      </div>
-
-      {/* LIST VIEW */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-gray-50 text-gray-500 font-semibold border-b border-gray-100">
-              <tr>
-                <th className="px-6 py-4">ID</th>
-                <th className="px-6 py-4">Pasien</th>
-                <th className="px-6 py-4">Dokter</th>
-                <th className="px-6 py-4">Tgl & Jam</th>
-                <th className="px-6 py-4">Layanan</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4 text-center">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {filteredAppointments.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className="p-8 text-center text-gray-400">
-                    Tidak ada jadwal ditemukan.
-                  </td>
-                </tr>
-              ) : (
-                filteredAppointments.map((apt) => (
-                  <tr key={apt.id} className="hover:bg-blue-50/50 transition duration-150">
-                    <td className="px-6 py-4 font-medium text-gray-600">{apt.id}</td>
-                    <td className="px-6 py-4 font-semibold text-gray-800">{apt.pasienNama}</td>
-                    <td className="px-6 py-4 text-gray-600">{apt.dokterNama}</td>
-                    <td className="px-6 py-4 text-gray-600">
-                      <div className="flex flex-col">
-                        <span className="font-medium">{apt.tanggal}</span>
-                        <span className="text-xs text-gray-400 flex items-center mt-1">
-                          <FaCalendarDay className="mr-1" /> {apt.jam}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">{apt.layanan}</td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          STATUS_COLORS[apt.status]
-                        }`}
-                      >
-                        {apt.status === "Menunggu"
-                          ? "⏳ Menunggu"
-                          : apt.status === "Selesai"
-                          ? "✔ Selesai"
-                          : "❌ Dibatalkan"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      {apt.status === "Menunggu" ? (
-                        <select
-                          value=""
-                          onChange={(e) => {
-                            if (e.target.value) updateStatus(apt.id, e.target.value);
-                          }}
-                          className="px-2 py-1 text-xs font-semibold border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 bg-white cursor-pointer text-gray-600 shadow-sm"
-                        >
-                          <option value="" disabled>
-                            Aksi...
-                          </option>
-                          <option value="Selesai">Selesai</option>
-                          <option value="Dibatalkan">Batalkan</option>
-                        </select>
-                      ) : (
-                        <span className="text-gray-400 font-medium">-</span>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl my-8">
-            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
-              <h2 className="text-lg font-bold text-gray-800">Buat Janji Temu Baru</h2>
-              <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600">
-                <FaTimes />
-              </button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">Tanggal Janji</label>
+              <input
+                required
+                type="date"
+                value={form.tanggal}
+                onChange={(e) => setForm({ ...form, tanggal: e.target.value, jam: "" })}
+                className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f06b6b]"
+              />
             </div>
-
-            <form onSubmit={handleSaveJanji} className="p-6 space-y-5">
-              {/* Pasien & Dokter */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Pilih Pasien
-                  </label>
-                  <select
-                    required
-                    value={form.pasienId}
-                    onChange={(e) => setForm({ ...form, pasienId: e.target.value })}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  >
-                    <option value="" disabled>
-                      -- Cari Pasien --
-                    </option>
-                    {patients.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.id} - {p.nama}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Pilih Dokter
-                  </label>
-                  <select
-                    required
-                    value={form.dokterNama}
-                    onChange={(e) =>
-                      setForm({ ...form, dokterNama: e.target.value, jam: "" })
-                    }
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  >
-                    <option value="" disabled>
-                      -- Spesialis --
-                    </option>
-                    {DOKTER_LIST.map((d) => (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Tanggal & Waktu */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Tanggal Janji
-                  </label>
-                  <input
-                    required
-                    type="date"
-                    value={form.tanggal}
-                    onChange={(e) => setForm({ ...form, tanggal: e.target.value, jam: "" })}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Jam (Auto Slot)
-                  </label>
-                  <select
-                    required
-                    value={form.jam}
-                    onChange={(e) => setForm({ ...form, jam: e.target.value })}
-                    disabled={!form.tanggal || !form.dokterNama}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-400"
-                  >
-                    <option value="" disabled>
-                      {form.dokterNama ? "-- Pilih Waktu --" : "Pilih dokter & tanggal dulu"}
-                    </option>
-                    {form.tanggal &&
-                      form.dokterNama &&
-                      getAvailableSlots(form.tanggal, form.dokterNama).map((slot) => (
-                        <option key={slot.time} value={slot.time} disabled={!slot.isAvailable}>
-                          {slot.time} {slot.isAvailable ? "" : "(Penuh)"}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Layanan & Keluhan */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Jenis Layanan
-                </label>
-                <select
-                  required
-                  value={form.layanan}
-                  onChange={(e) => setForm({ ...form, layanan: e.target.value })}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                >
-                  <option value="" disabled>
-                    -- Pilih Tindakan --
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">Jam</label>
+              <select
+                required
+                value={form.jam}
+                onChange={(e) => setForm({ ...form, jam: e.target.value })}
+                disabled={!form.tanggal || !form.dokterNama}
+                className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f06b6b] bg-white disabled:bg-gray-100 disabled:text-gray-400"
+              >
+                <option value="" disabled>{form.dokterNama ? "-- Pilih Waktu --" : "Pilih dokter dulu"}</option>
+                {form.tanggal && form.dokterNama && getAvailableSlots(form.tanggal, form.dokterNama).map((slot) => (
+                  <option key={slot.time} value={slot.time} disabled={!slot.isAvailable}>
+                    {slot.time} {slot.isAvailable ? "" : "(Penuh)"}
                   </option>
-                  {LAYANAN_LIST.map((l) => (
-                    <option key={l} value={l}>
-                      {l}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Keluhan Pasien
-                </label>
-                <textarea
-                  required
-                  rows="3"
-                  value={form.keluhan}
-                  onChange={(e) => setForm({ ...form, keluhan: e.target.value })}
-                  placeholder="Deskripsikan sakit yang dialami..."
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                ></textarea>
-              </div>
-
-              <div className="flex justify-end space-x-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-medium transition"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2.5 rounded-xl text-white text-sm font-semibold transition shadow-sm"
-                  style={{ backgroundColor: "#f06b6b" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e05555")}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#f06b6b")}
-                >
-                  Booking Jadwal
-                </button>
-              </div>
-            </form>
+                ))}
+              </select>
+            </div>
           </div>
-        </div>
-      )}
+
+          <SelectField
+            label="Jenis Layanan"
+            value={form.layanan}
+            onChange={(e) => setForm({ ...form, layanan: e.target.value })}
+            options={LAYANAN_LIST.map((l) => ({ value: l, label: l }))}
+          />
+
+          <TextArea
+            label="Keluhan Pasien"
+            value={form.keluhan}
+            onChange={(e) => setForm({ ...form, keluhan: e.target.value })}
+            placeholder="Deskripsikan keluhan pasien..."
+            rows={3}
+          />
+
+          <Checkbox
+            label="Kirim pengingat ke pasien"
+            checked={reminderChecked}
+            onChange={(e) => setReminderChecked(e.target.checked)}
+          />
+
+          <div className="flex justify-end gap-3 pt-2">
+            <Button type="secondary" onClick={() => setShowForm(false)}>Batal</Button>
+            <Button type="primary">Booking Jadwal</Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

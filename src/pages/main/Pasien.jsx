@@ -1,14 +1,24 @@
-
 import { useState, useMemo } from "react";
-import { FaPlus, FaSearch, FaEdit, FaTimes, FaUserAlt, FaNotesMedical } from "react-icons/fa";
+import { FaPlus, FaSearch, FaEdit, FaUserAlt, FaNotesMedical } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useClinic } from "../../context/ClinicContext";
+import Card from "../../components/Card";
+import Badge from "../../components/Badge";
+import Button from "../../components/Button";
+import InputField from "../../components/InputField";
+import Modal from "../../components/Modal";
+import PageHeader from "../../components/PageHeader";
+import Avatar from "../../components/Avatar";
+import SelectField from "../../components/SelectField";
+import TextArea from "../../components/TextArea";
+import Alert from "../../components/Alert";
+import Table from "../../components/Table";
 
-const BADGE_COLORS = {
-  Aktif: "bg-green-100 text-green-700",
-  Baru: "bg-blue-100 text-blue-700",
-  VIP: "bg-yellow-100 text-yellow-700",
-  "Tidak Aktif": "bg-red-100 text-red-700",
+const STATUS_BADGE = {
+  Aktif: "success",
+  Baru: "primary",
+  VIP: "warning",
+  "Tidak Aktif": "danger",
 };
 
 const EMPTY_FORM = {
@@ -18,6 +28,7 @@ const EMPTY_FORM = {
   noHp: "",
   alamat: "",
   status: "Baru",
+  catatan: "",
 };
 
 export default function Pasien() {
@@ -27,12 +38,11 @@ export default function Pasien() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [isEdit, setIsEdit] = useState(false);
+  const [successAlert, setSuccessAlert] = useState("");
 
-  // Statistik
   const totalPasien = pasienData.length;
-  const pasienBaruBulanIni = pasienData.filter((p) => p.status === "Baru").length;
+  const pasienBaru = pasienData.filter((p) => p.status === "Baru").length;
 
-  // Filter
   const filteredPasien = useMemo(() => {
     return pasienData.filter((p) => {
       const matchSearch =
@@ -43,320 +53,219 @@ export default function Pasien() {
     });
   }, [pasienData, searchTerm, filterStatus]);
 
-  // Hitung umur
   const calculateAge = (dob) => {
     if (!dob) return 0;
     const diff = Date.now() - new Date(dob).getTime();
-    const ageDate = new Date(diff);
-    return Math.abs(ageDate.getUTCFullYear() - 1970);
+    return Math.abs(new Date(diff).getUTCFullYear() - 1970);
   };
 
-  // Simpan data
   const handleSave = (e) => {
     e.preventDefault();
     if (isEdit) {
       setPasienData(
         pasienData.map((p) =>
-          p.id === form.id
-            ? {
-                ...form,
-                umur: calculateAge(form.tanggalLahir),
-              }
-            : p
+          p.id === form.id ? { ...form, umur: calculateAge(form.tanggalLahir) } : p
         )
       );
+      setSuccessAlert(`Data pasien ${form.nama} berhasil diperbarui.`);
     } else {
-      const newPasien = {
-        ...form,
-        id: `PS-${String(pasienData.length + 1).padStart(3, "0")}`,
-        umur: calculateAge(form.tanggalLahir),
-        terakhirKunjungan: "-",
-        riwayatMedis: [],
-        riwayatJanji: [],
-        riwayatPembayaran: [],
-      };
-      setPasienData([newPasien, ...pasienData]);
+      setPasienData([
+        {
+          ...form,
+          id: `PS-${String(pasienData.length + 1).padStart(3, "0")}`,
+          umur: calculateAge(form.tanggalLahir),
+          terakhirKunjungan: "-",
+          riwayatMedis: [],
+          riwayatJanji: [],
+          riwayatPembayaran: [],
+        },
+        ...pasienData,
+      ]);
+      setSuccessAlert(`Pasien baru ${form.nama} berhasil ditambahkan.`);
     }
     closeForm();
+    setTimeout(() => setSuccessAlert(""), 4000);
   };
 
-  // Edit
-  const openEdit = (p) => {
-    setForm(p);
-    setIsEdit(true);
-    setShowForm(true);
-  };
-
-  // Tutup modal
-  const closeForm = () => {
-    setForm(EMPTY_FORM);
-    setIsEdit(false);
-    setShowForm(false);
-  };
+  const openEdit = (p) => { setForm(p); setIsEdit(true); setShowForm(true); };
+  const closeForm = () => { setForm(EMPTY_FORM); setIsEdit(false); setShowForm(false); };
 
   return (
     <div className="flex flex-col w-full pb-10">
+      {/* Page Header */}
+      <PageHeader title="Manajemen Pasien" breadcrumb={["Pasien"]}>
+        <Button type="primary" icon={<FaPlus />} onClick={() => setShowForm(true)}>
+          Tambah Pasien
+        </Button>
+      </PageHeader>
+
+      {/* Success Alert */}
+      {successAlert && (
+        <div className="mb-4">
+          <Alert type="success" onClose={() => setSuccessAlert("")}>
+            {successAlert}
+          </Alert>
+        </div>
+      )}
+
       {/* Statistik */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center space-x-4">
-          <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-xl">
-            <FaUserAlt />
+        <Card>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-xl">
+              <FaUserAlt />
+            </div>
+            <div>
+              <p className="text-gray-500 text-sm font-medium">Total Pasien</p>
+              <h3 className="text-2xl font-bold text-gray-800">{totalPasien}</h3>
+            </div>
           </div>
-          <div>
-            <p className="text-gray-500 text-sm font-medium">Total Pasien</p>
-            <h3 className="text-2xl font-bold text-gray-800">{totalPasien}</h3>
-          </div>
-        </div>
+        </Card>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center space-x-4">
-          <div className="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center text-xl">
-            <FaNotesMedical />
+        <Card>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center text-xl">
+              <FaNotesMedical />
+            </div>
+            <div>
+              <p className="text-gray-500 text-sm font-medium">Pasien Baru</p>
+              <h3 className="text-2xl font-bold text-gray-800">{pasienBaru}</h3>
+            </div>
           </div>
-          <div>
-            <p className="text-gray-500 text-sm font-medium">Pasien Baru</p>
-            <h3 className="text-2xl font-bold text-gray-800">{pasienBaruBulanIni}</h3>
-          </div>
-        </div>
+        </Card>
       </div>
 
       {/* Toolbar */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
-          {/* Search */}
-          <div className="relative w-full md:w-64">
-            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
+      <Card className="mb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+            <InputField
               placeholder="Cari pasien..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-500"
+              icon={<FaSearch />}
+            />
+            <SelectField
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              options={[
+                { value: "Semua", label: "Semua Status" },
+                { value: "Aktif", label: "Aktif" },
+                { value: "Baru", label: "Baru" },
+                { value: "VIP", label: "VIP" },
+                { value: "Tidak Aktif", label: "Tidak Aktif" },
+              ]}
             />
           </div>
-
-          {/* Filter */}
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="w-full md:w-40 px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-500"
-          >
-            <option value="Semua">Semua Status</option>
-            <option value="Aktif">Aktif</option>
-            <option value="Baru">Baru</option>
-            <option value="VIP">VIP</option>
-            <option value="Tidak Aktif">Tidak Aktif</option>
-          </select>
         </div>
-
-        {/* Tombol tambah */}
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center justify-center space-x-2 text-white px-5 py-2.5 rounded-xl font-medium transition"
-          style={{ backgroundColor: "#f06b6b" }}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e05555")}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#f06b6b")}
-        >
-          <FaPlus />
-          <span>Tambah Pasien</span>
-        </button>
-      </div>
+      </Card>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-gray-50 text-gray-500 font-semibold border-b border-gray-100">
-              <tr>
-                <th className="px-6 py-4">ID</th>
-                <th className="px-6 py-4">Profil Pasien</th>
-                <th className="px-6 py-4">L/P</th>
-                <th className="px-6 py-4">No. HP</th>
-                <th className="px-6 py-4">Kunjungan Terakhir</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4 text-center">Aksi</th>
+      <Card>
+        <Table headers={["ID", "Profil Pasien", "L/P", "No. HP", "Kunjungan Terakhir", "Status", "Aksi"]}>
+          {filteredPasien.length === 0 ? (
+            <tr>
+              <td colSpan="7" className="px-6 py-8 text-center text-gray-400">
+                Tidak ada data pasien ditemukan.
+              </td>
+            </tr>
+          ) : (
+            filteredPasien.map((p) => (
+              <tr key={p.id} className="hover:bg-gray-50 transition text-sm">
+                <td className="px-4 py-4 font-medium text-gray-600">{p.id}</td>
+                <td className="px-4 py-4">
+                  <div className="flex items-center gap-3">
+                    <Avatar name={p.nama} />
+                    <div>
+                      <Link to={`/pasien/${p.id}`} className="font-semibold text-gray-800 hover:text-[#f06b6b] hover:underline transition">
+                        {p.nama}
+                      </Link>
+                      <p className="text-xs text-gray-400">{p.umur} Tahun • {p.alamat}</p>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-4 py-4 text-gray-600">{p.jenisKelamin}</td>
+                <td className="px-4 py-4 text-gray-600">{p.noHp}</td>
+                <td className="px-4 py-4 text-gray-500">{p.terakhirKunjungan}</td>
+                <td className="px-4 py-4">
+                  <Badge type={STATUS_BADGE[p.status] || "secondary"}>{p.status}</Badge>
+                </td>
+                <td className="px-4 py-4 text-center">
+                  <button onClick={() => openEdit(p)} className="p-2 text-gray-400 hover:text-yellow-500 hover:bg-yellow-50 rounded-lg transition">
+                    <FaEdit className="text-lg" />
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {filteredPasien.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className="px-6 py-8 text-center text-gray-400">
-                    Tidak ada data pasien ditemukan.
-                  </td>
-                </tr>
-              ) : (
-                filteredPasien.map((p) => (
-                  <tr key={p.id} className="hover:bg-blue-50/50 transition">
-                    <td className="px-6 py-4 font-medium text-gray-600">{p.id}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-3">
-                        {/* Avatar */}
-                        <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg">
-                          {p.nama.charAt(0).toUpperCase()}
-                        </div>
-                        {/* Nama */}
-                        <div>
-                          <Link
-                            to={`/pasien/${p.id}`}
-                            className="font-semibold text-gray-800 hover:text-[#1A7C6E] transition hover:underline"
-                          >
-                            {p.nama}
-                          </Link>
-                          <p className="text-xs text-gray-400">
-                            {p.umur} Tahun • {p.alamat}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">{p.jenisKelamin}</td>
-                    <td className="px-6 py-4 text-gray-600">{p.noHp}</td>
-                    <td className="px-6 py-4 text-gray-500">{p.terakhirKunjungan}</td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          BADGE_COLORS[p.status] || BADGE_COLORS["Tidak Aktif"]
-                        }`}
-                      >
-                        {p.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-center space-x-3">
-                        <button
-                          onClick={() => openEdit(p)}
-                          className="p-2 text-gray-400 hover:text-yellow-500 hover:bg-yellow-50 rounded-lg transition"
-                        >
-                          <FaEdit className="text-lg" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            ))
+          )}
+        </Table>
+      </Card>
 
       {/* Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
-            {/* Header */}
-            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h2 className="text-lg font-bold text-gray-800">
-                {isEdit ? "Edit Data Pasien" : "Tambah Pasien Baru"}
-              </h2>
-              <button onClick={closeForm} className="text-gray-400 hover:text-gray-600">
-                <FaTimes />
-              </button>
+      <Modal isOpen={showForm} onClose={closeForm} title={isEdit ? "Edit Data Pasien" : "Tambah Pasien Baru"}>
+        <form onSubmit={handleSave} className="space-y-4">
+          <InputField
+            label="Nama Lengkap"
+            value={form.nama}
+            onChange={(e) => setForm({ ...form, nama: e.target.value })}
+            placeholder="Nama lengkap pasien"
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">Tanggal Lahir</label>
+              <input
+                type="date"
+                value={form.tanggalLahir}
+                onChange={(e) => setForm({ ...form, tanggalLahir: e.target.value })}
+                className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f06b6b]"
+              />
             </div>
-
-            {/* Form */}
-            <form onSubmit={handleSave} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nama Lengkap
-                </label>
-                <input
-                  required
-                  value={form.nama}
-                  onChange={(e) => setForm({ ...form, nama: e.target.value })}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Tanggal Lahir
-                  </label>
-                  <input
-                    required
-                    type="date"
-                    value={form.tanggalLahir}
-                    onChange={(e) => setForm({ ...form, tanggalLahir: e.target.value })}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Jenis Kelamin
-                  </label>
-                  <select
-                    value={form.jenisKelamin}
-                    onChange={(e) => setForm({ ...form, jenisKelamin: e.target.value })}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm"
-                  >
-                    <option value="L">Laki-laki</option>
-                    <option value="P">Perempuan</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nomor HP
-                </label>
-                <input
-                  required
-                  value={form.noHp}
-                  onChange={(e) => setForm({ ...form, noHp: e.target.value })}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Alamat
-                </label>
-                <textarea
-                  required
-                  rows="2"
-                  value={form.alamat}
-                  onChange={(e) => setForm({ ...form, alamat: e.target.value })}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Status Pasien
-                </label>
-                <select
-                  value={form.status}
-                  onChange={(e) => setForm({ ...form, status: e.target.value })}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm"
-                >
-                  <option value="Aktif">Aktif</option>
-                  <option value="Baru">Baru</option>
-                  <option value="VIP">VIP</option>
-                  <option value="Tidak Aktif">Tidak Aktif</option>
-                </select>
-              </div>
-
-              {/* Footer */}
-              <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100 mt-6">
-                <button
-                  type="button"
-                  onClick={closeForm}
-                  className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-medium"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2.5 rounded-xl text-white text-sm font-semibold"
-                  style={{ backgroundColor: "#f06b6b" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e05555")}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#f06b6b")}
-                >
-                  Simpan Data
-                </button>
-              </div>
-            </form>
+            <SelectField
+              label="Jenis Kelamin"
+              value={form.jenisKelamin}
+              onChange={(e) => setForm({ ...form, jenisKelamin: e.target.value })}
+              options={[
+                { value: "L", label: "Laki-laki" },
+                { value: "P", label: "Perempuan" },
+              ]}
+            />
           </div>
-        </div>
-      )}
+          <InputField
+            label="Nomor HP"
+            value={form.noHp}
+            onChange={(e) => setForm({ ...form, noHp: e.target.value })}
+            placeholder="08xxxxxxxxxx"
+          />
+          <InputField
+            label="Alamat"
+            value={form.alamat}
+            onChange={(e) => setForm({ ...form, alamat: e.target.value })}
+            placeholder="Kota / Kabupaten"
+          />
+          <SelectField
+            label="Status Pasien"
+            value={form.status}
+            onChange={(e) => setForm({ ...form, status: e.target.value })}
+            options={[
+              { value: "Aktif", label: "Aktif" },
+              { value: "Baru", label: "Baru" },
+              { value: "VIP", label: "VIP" },
+              { value: "Tidak Aktif", label: "Tidak Aktif" },
+            ]}
+          />
+          <TextArea
+            label="Catatan Tambahan"
+            value={form.catatan || ""}
+            onChange={(e) => setForm({ ...form, catatan: e.target.value })}
+            placeholder="Catatan khusus untuk pasien ini (opsional)..."
+            rows={3}
+          />
+          <div className="flex justify-end gap-3 pt-2">
+            <Button type="secondary" onClick={closeForm}>Batal</Button>
+            <Button type="primary">Simpan Data</Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
