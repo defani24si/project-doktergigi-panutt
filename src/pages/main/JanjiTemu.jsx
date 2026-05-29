@@ -12,6 +12,20 @@ import TextArea from "../../components/TextArea";
 import Alert from "../../components/Alert";
 import Table from "../../components/Table";
 import Checkbox from "../../components/Checkbox";
+import { DatePicker } from "../../components/ui/date-picker";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "../../components/ui/alert-dialog";
+import { format } from "date-fns";
+import { id as localeId } from "date-fns/locale";
 
 const DOKTER_LIST = [
   "drg. Budi (Ortodonti)",
@@ -41,6 +55,8 @@ export default function JanjiTemu() {
   const [showForm, setShowForm] = useState(false);
   const [successAlert, setSuccessAlert] = useState("");
   const [reminderChecked, setReminderChecked] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(undefined);
+  const [cancelTargetId, setCancelTargetId] = useState(null);
   const [form, setForm] = useState({
     pasienId: "", dokterNama: "",
     tanggal: new Date().toISOString().split("T")[0],
@@ -96,6 +112,13 @@ export default function JanjiTemu() {
     setAppointments(appointments.map((apt) => (apt.id === id ? { ...apt, status: newStatus } : apt)));
   };
 
+  const handleCancelConfirm = () => {
+    if (cancelTargetId) {
+      updateStatus(cancelTargetId, "Dibatalkan");
+      setCancelTargetId(null);
+    }
+  };
+
   return (
     <div className="flex flex-col w-full pb-10">
       {/* Page Header */}
@@ -143,7 +166,7 @@ export default function JanjiTemu() {
       {/* Toolbar */}
       <Card className="mb-6">
         <div className="flex flex-col md:flex-row justify-between gap-4">
-          <div className="flex flex-wrap gap-3 w-full md:w-auto">
+          <div className="flex flex-wrap gap-3 w-full md:w-auto items-center">
             <InputField
               placeholder="Cari pasien / dokter..."
               value={searchTerm}
@@ -160,12 +183,25 @@ export default function JanjiTemu() {
                 { value: "Dibatalkan", label: "Dibatalkan" },
               ]}
             />
-            <input
-              type="date"
-              value={filterTanggal}
-              onChange={(e) => setFilterTanggal(e.target.value)}
-              className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f06b6b] text-gray-600"
+            {/* shadcn DatePicker — filter tanggal */}
+            <DatePicker
+              date={selectedDate}
+              onSelect={(date) => {
+                setSelectedDate(date);
+                setFilterTanggal(date ? format(date, "yyyy-MM-dd") : "");
+              }}
+              placeholder="Filter tanggal..."
+              locale={localeId}
+              className="h-[38px] text-sm text-gray-600 border-gray-300"
             />
+            {filterTanggal && (
+              <button
+                onClick={() => { setFilterTanggal(""); setSelectedDate(undefined); }}
+                className="text-xs text-[#f06b6b] hover:underline font-medium"
+              >
+                Reset
+              </button>
+            )}
           </div>
         </div>
       </Card>
@@ -197,17 +233,47 @@ export default function JanjiTemu() {
                 </td>
                 <td className="px-4 py-4 text-center">
                   {apt.status === "Menunggu" ? (
-                    <select
-                      value=""
-                      onChange={(e) => { if (e.target.value) updateStatus(apt.id, e.target.value); }}
-                      className="px-2 py-1 text-xs border border-gray-200 rounded-lg focus:outline-none bg-white text-gray-600"
-                    >
-                      <option value="" disabled>Aksi...</option>
-                      <option value="Selesai">Selesai</option>
-                      <option value="Dibatalkan">Batalkan</option>
-                    </select>
+                    <div className="flex items-center justify-center gap-2">
+                      {/* Selesai langsung */}
+                      <button
+                        onClick={() => updateStatus(apt.id, "Selesai")}
+                        className="px-3 py-1.5 text-xs font-medium bg-green-50 text-green-600 border border-green-200 rounded-lg hover:bg-green-100 transition whitespace-nowrap"
+                      >
+                        ✓ Selesai
+                      </button>
+
+                      {/* Batalkan pakai AlertDialog */}
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <button
+                            onClick={() => setCancelTargetId(apt.id)}
+                            className="px-3 py-1.5 text-xs font-medium bg-red-50 text-red-500 border border-red-200 rounded-lg hover:bg-red-100 transition whitespace-nowrap"
+                          >
+                            ✕ Batalkan
+                          </button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Batalkan Janji Temu?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Janji temu <strong>{apt.pasienNama}</strong> dengan <strong>{apt.dokterNama}</strong> pada{" "}
+                              <strong>{apt.tanggal} pukul {apt.jam}</strong> akan dibatalkan. Tindakan ini tidak dapat diurungkan.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Tidak, Kembali</AlertDialogCancel>
+                            <AlertDialogAction
+                              variant="destructive"
+                              onClick={handleCancelConfirm}
+                            >
+                              Ya, Batalkan
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   ) : (
-                    <span className="text-gray-400">-</span>
+                    <span className="text-gray-300 text-lg">—</span>
                   )}
                 </td>
               </tr>
@@ -241,7 +307,10 @@ export default function JanjiTemu() {
                 required
                 type="date"
                 value={form.tanggal}
-                onChange={(e) => setForm({ ...form, tanggal: e.target.value, jam: "" })}
+                onChange={(e) => {
+                  setForm({ ...form, tanggal: e.target.value, jam: "" });
+                  setSelectedDate(e.target.value ? new Date(e.target.value) : new Date());
+                }}
                 className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f06b6b]"
               />
             </div>
