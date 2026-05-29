@@ -34,6 +34,7 @@ const Login = React.lazy(() => import("./pages/auth/Login"));
 const Register = React.lazy(() => import("./pages/auth/Register"));
 const Forgot = React.lazy(() => import("./pages/auth/Forgot"));
 const Loading = React.lazy(() => import("./components/Loading"));
+const CobaFiturXYZ = React.lazy(() => import("./pages/main/CobaFiturXYZ"));
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
           <Route path="/pasien/:id" element={<PasienDetail/>} />
           <Route path="/dokter" element={<Dokter />} />
           <Route path="/dokter/:id" element={<DokterDetail />} />
+          <Route path="/CobaFiturXYZ" element={<CobaFiturXYZ />} />
           <Route path="/error/400" element={<Error400 />} />
           <Route path="/error/401" element={<Error401 />} />
           <Route path="/error/403" element={<Error403 />} />
