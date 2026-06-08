@@ -1,5 +1,5 @@
 // InputField — sesuai Figma: border tipis, icon di kiri, placeholder abu
-export default function InputField({ label, type = "text", placeholder, value, onChange, name, icon }) {
+export default function InputField({ label, type = "text", placeholder, value, onChange, name, icon, inputRef }) {
   return (
     <div className="flex flex-col gap-1">
       {label && (
@@ -12,6 +12,7 @@ export default function InputField({ label, type = "text", placeholder, value, o
           </span>
         )}
         <input
+          ref={inputRef}
           type={type}
           name={name}
           placeholder={placeholder}

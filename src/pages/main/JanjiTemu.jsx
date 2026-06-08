@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { FaPlus, FaSearch, FaCalendarDay } from "react-icons/fa";
 import { useClinic } from "../../context/ClinicContext";
 import Card from "../../components/Card";
@@ -62,6 +62,20 @@ export default function JanjiTemu() {
     tanggal: new Date().toISOString().split("T")[0],
     jam: "", layanan: "", keluhan: "",
   });
+
+  const searchRef = useRef(null);
+  useEffect(() => {
+    if (searchRef.current) {
+      searchRef.current.focus();
+    }
+  }, []);
+
+  const pasienSelectRef = useRef(null);
+  useEffect(() => {
+    if (showForm && pasienSelectRef.current) {
+      pasienSelectRef.current.focus();
+    }
+  }, [showForm]);
 
   const totalMenunggu = appointments.filter((a) => a.status === "Menunggu").length;
   const totalSelesai = appointments.filter((a) => a.status === "Selesai").length;
@@ -172,6 +186,7 @@ export default function JanjiTemu() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               icon={<FaSearch />}
+              inputRef={searchRef}
             />
             <SelectField
               value={filterStatus}
@@ -291,6 +306,7 @@ export default function JanjiTemu() {
               value={form.pasienId}
               onChange={(e) => setForm({ ...form, pasienId: e.target.value })}
               options={patients.map((p) => ({ value: p.id, label: `${p.id} - ${p.nama}` }))}
+              selectRef={pasienSelectRef}
             />
             <SelectField
               label="Pilih Dokter"

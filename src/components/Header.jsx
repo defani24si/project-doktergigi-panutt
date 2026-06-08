@@ -57,11 +57,11 @@ export default function Header() {
         <input
           type="text"
           placeholder="Search your task here..."
-          className="border border-gray-200 p-2 pl-4 pr-10 bg-gray-50 w-full rounded-full outline-none text-sm text-gray-600 placeholder-gray-400 focus:border-red-300 transition-colors"
+          className="p-2 pl-4 pr-10 w-full rounded-full outline-none text-sm text-gray-600 placeholder-gray-400 bg-white/90 focus:bg-white transition"
         />
         <button
           className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center text-white"
-          style={{ backgroundColor: "#f06b6b" }}
+          style={{ backgroundColor: "#c73030" }}
         >
           <FaSearch size={12} />
         </button>

@@ -27,15 +27,37 @@ export default function Sidebar() {
     <div
       id="sidebar"
       className="flex min-h-screen w-64 flex-col p-6 shadow-lg z-10"
-      style={{ backgroundColor: "#f0b6b6" }}
+      style={{ backgroundColor: "#f06b6b" }}
     >
       {/* Logo */}
-      <div className="flex flex-col items-center mb-4 mt-2">
-        <img
-          src="/img/logo1.png"
-          alt="Panutt Dental Clinic"
-          className="w-40 object-contain drop-shadow-sm"
-        />
+      <div className="flex items-center gap-3 mb-6 mt-2 px-1">
+        {/* Icon box */}
+        <div
+          className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-md"
+          style={{ backgroundColor: "rgba(255,255,255,0.25)" }}
+        >
+          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-7 h-7">
+            {/* Gigi */}
+            <path
+              d="M20 6 C14 6 10 10 10 15 C10 18 11 20 12 22 C13 25 13 30 15 33 C16 35 17 35 18 33 C19 31 19 28 20 28 C21 28 21 31 22 33 C23 35 24 35 25 33 C27 30 27 25 28 22 C29 20 30 18 30 15 C30 10 26 6 20 6Z"
+              fill="white"
+              opacity="0.95"
+            />
+            {/* Highlight gigi */}
+            <path
+              d="M16 9 C14 10 12 12 12 15"
+              stroke="white"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              opacity="0.4"
+            />
+          </svg>
+        </div>
+        {/* Teks */}
+        <div>
+          <p className="text-white font-bold text-lg leading-tight tracking-wide">Panutt</p>
+          <p className="text-white/70 text-xs leading-tight">Dental Clinic</p>
+        </div>
       </div>
 
       {/* Menu */}
@@ -127,7 +149,7 @@ export default function Sidebar() {
       </nav>
 
       {/* Logout */}
-      <div className="mt-4 border-t border-red-400 pt-4">
+      <div className="mt-4 border-t pt-4" style={{ borderColor: "rgba(255,255,255,0.25)" }}>
         <div
           onClick={handleLogout}
           className="flex cursor-pointer items-center rounded-xl px-4 py-3 font-medium text-white hover:bg-white hover:bg-opacity-20 transition-all"

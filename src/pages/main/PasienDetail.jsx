@@ -9,6 +9,11 @@ import {
   FaNotesMedical,
   FaVenusMars,
   FaClipboardList,
+  FaExclamationCircle,
+  FaStar,
+  FaRegStar,
+  FaCrown,
+  FaShareAlt,
 } from "react-icons/fa";
 import Button from "../../components/Button";
 import Badge from "../../components/Badge";
@@ -19,8 +24,6 @@ import Table from "../../components/Table";
 
 const STATUS_BADGE = {
   Aktif: "success",
-  Baru: "primary",
-  VIP: "warning",
   "Tidak Aktif": "danger",
 };
 
@@ -29,6 +32,24 @@ const STATUS_JANJI = {
   Selesai: "success",
   Dibatalkan: "danger",
 };
+
+const STATUS_KOMPLAIN = {
+  Selesai: "success",
+  Diproses: "warning",
+  Menunggu: "primary",
+};
+
+function StarRating({ value = 0 }) {
+  return (
+    <div className="flex gap-0.5">
+      {[1, 2, 3, 4, 5].map((i) => (
+        i <= value
+          ? <FaStar key={i} className="text-yellow-400 text-sm" />
+          : <FaRegStar key={i} className="text-gray-300 text-sm" />
+      ))}
+    </div>
+  );
+}
 
 export default function PasienDetail() {
   const { id } = useParams();
@@ -48,6 +69,29 @@ export default function PasienDetail() {
     );
   }
 
+  // Data dummy komplain & feedback berdasarkan pasien
+  const riwayatKomplain = pasien.riwayatKomplain || [
+    {
+      id: 1,
+      tanggal: pasien.terakhirKunjungan || "2024-01-01",
+      kategori: "Pelayanan",
+      deskripsi: "Waktu tunggu terlalu lama saat pendaftaran.",
+      status: "Selesai",
+      respon: "Kami mohon maaf atas ketidaknyamanan ini. Sistem antrian telah diperbaiki.",
+    },
+  ];
+
+  const riwayatFeedback = pasien.riwayatFeedback || [
+    {
+      id: 1,
+      tanggal: pasien.terakhirKunjungan || "2024-01-01",
+      layanan: pasien.jenisPerwatan || "Konsultasi Gigi",
+      rating: 4,
+      komentar: pasien.feedback || "Pelayanan cukup baik dan dokter ramah.",
+      dokter: "drg. Fikri (Umum)",
+    },
+  ];
+
   return (
     <div className="flex flex-col w-full pb-10">
       {/* Page Header */}
@@ -66,8 +110,18 @@ export default function PasienDetail() {
           <div className="flex flex-col md:flex-row md:items-center gap-2 mb-1">
             <h2 className="text-xl font-bold text-gray-800">{pasien.nama}</h2>
             <Badge type={STATUS_BADGE[pasien.status] || "secondary"}>{pasien.status}</Badge>
+            {pasien.levelMembership && (
+              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-600">
+                <FaCrown className="text-xs" /> {pasien.levelMembership}
+              </span>
+            )}
           </div>
           <p className="text-sm text-gray-400">{pasien.umur} Tahun • ID: {pasien.id}</p>
+          {pasien.sumber && (
+            <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+              <FaShareAlt className="text-xs" /> Sumber: {pasien.sumber}
+            </p>
+          )}
         </div>
       </Card>
 
@@ -109,9 +163,7 @@ export default function PasienDetail() {
               <p className="text-sm font-semibold text-gray-800">
                 {pasien.tanggalLahir
                   ? new Date(pasien.tanggalLahir).toLocaleDateString("id-ID", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
+                      day: "numeric", month: "long", year: "numeric",
                     })
                   : "-"}
               </p>
@@ -170,7 +222,7 @@ export default function PasienDetail() {
       </Card>
 
       {/* Riwayat Janji */}
-      <Card>
+      <Card className="mb-6">
         <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
           <FaCalendarAlt className="text-purple-500" />
           <h3 className="text-sm font-bold text-gray-700">Riwayat Janji Temu</h3>
@@ -190,6 +242,73 @@ export default function PasienDetail() {
           </Table>
         ) : (
           <p className="text-sm text-gray-400">Belum ada riwayat janji temu.</p>
+        )}
+      </Card>
+
+      {/* Riwayat Komplain */}
+      <Card className="mb-6">
+        <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
+          <FaExclamationCircle className="text-orange-500" />
+          <h3 className="text-sm font-bold text-gray-700">Riwayat Komplain</h3>
+          <span className="ml-auto text-xs bg-orange-50 text-orange-500 font-semibold px-2 py-0.5 rounded-full">
+            {riwayatKomplain.length} komplain
+          </span>
+        </div>
+        {riwayatKomplain.length > 0 ? (
+          <div className="space-y-3">
+            {riwayatKomplain.map((item) => (
+              <div key={item.id} className="border border-gray-100 rounded-xl p-4 hover:bg-orange-50/30 transition">
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">
+                      {item.kategori}
+                    </span>
+                    <Badge type={STATUS_KOMPLAIN[item.status] || "secondary"}>{item.status}</Badge>
+                  </div>
+                  <span className="text-xs text-gray-400 flex-shrink-0">{item.tanggal}</span>
+                </div>
+                <p className="text-sm text-gray-700 mb-2">{item.deskripsi}</p>
+                {item.respon && (
+                  <div className="bg-green-50 border border-green-100 rounded-lg px-3 py-2">
+                    <p className="text-xs font-semibold text-green-600 mb-0.5">Respon Klinik:</p>
+                    <p className="text-xs text-green-700">{item.respon}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-400">Belum ada riwayat komplain.</p>
+        )}
+      </Card>
+
+      {/* Feedback & Review */}
+      <Card>
+        <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
+          <FaStar className="text-yellow-400" />
+          <h3 className="text-sm font-bold text-gray-700">Feedback & Review</h3>
+          <span className="ml-auto text-xs bg-yellow-50 text-yellow-600 font-semibold px-2 py-0.5 rounded-full">
+            {riwayatFeedback.length} ulasan
+          </span>
+        </div>
+        {riwayatFeedback.length > 0 ? (
+          <div className="space-y-3">
+            {riwayatFeedback.map((item) => (
+              <div key={item.id} className="border border-gray-100 rounded-xl p-4 hover:bg-yellow-50/20 transition">
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <div className="flex flex-col gap-1">
+                    <StarRating value={item.rating} />
+                    <span className="text-xs text-gray-500 font-medium">{item.layanan}</span>
+                  </div>
+                  <span className="text-xs text-gray-400 flex-shrink-0">{item.tanggal}</span>
+                </div>
+                <p className="text-sm text-gray-700 mb-2 italic">"{item.komentar}"</p>
+                <p className="text-xs text-gray-400">Dokter: {item.dokter}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-400">Belum ada feedback atau review.</p>
         )}
       </Card>
     </div>

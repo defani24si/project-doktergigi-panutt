@@ -3,7 +3,7 @@ export default function Table({ headers, children, striped = false }) {
     <div className="overflow-x-auto rounded-xl border border-gray-100">
       <table className="w-full text-sm text-left">
         <thead>
-          <tr className="bg-[#fde8e8] text-[#c0392b]">
+          <tr className="bg-[#fde8e8] text-[#e53935]">
             {headers.map((header, index) => (
               <th
                 key={index}

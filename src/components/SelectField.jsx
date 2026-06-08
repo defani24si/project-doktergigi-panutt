@@ -1,10 +1,11 @@
-export default function SelectField({ label, options = [], value, onChange, name }) {
+export default function SelectField({ label, options = [], value, onChange, name, selectRef }) {
   return (
     <div className="flex flex-col gap-1">
       {label && (
         <label className="text-sm font-medium text-gray-700">{label}</label>
       )}
       <select
+        ref={selectRef}
         name={name}
         value={value}
         onChange={onChange}
