@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import { authAPI } from "../../services/notesAPI";
 
 function InputRow({ icon, type, name, value, onChange, placeholder, rightEl, error }) {
   return (
@@ -51,11 +52,16 @@ export default function Register() {
     return e;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const e2 = validate();
     if (Object.keys(e2).length > 0) { setErrors(e2); return; }
-    setSuccess(true);
+    try {
+      await authAPI.register(form);
+      setSuccess(true);
+    } catch (err) {
+      setErrors({ general: err.response?.data?.message || "Registrasi gagal, coba lagi" });
+    }
   };
 
   if (success) {
@@ -83,6 +89,11 @@ export default function Register() {
       <p className="text-sm text-gray-400 mb-4">Buat akun klinik baru</p>
 
       <form onSubmit={handleSubmit} className="space-y-2.5">
+        {errors.general && (
+          <div className="text-xs text-red-500 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            {errors.general}
+          </div>
+        )}
         <div className="grid grid-cols-2 gap-2.5">
           <InputRow
             icon={<FaUser />}

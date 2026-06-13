@@ -1,7 +1,7 @@
-import axios from "axios";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FaUser, FaLock, FaEye, FaEyeSlash, FaFacebook, FaGoogle, FaTwitter } from "react-icons/fa";
+import { authAPI } from "../../services/notesAPI";
 
 function InputRow({ icon, type, name, value, onChange, placeholder, rightEl }) {
   return (
@@ -33,18 +33,22 @@ export default function Login() {
     setDataForm({ ...dataForm, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    axios
-      .post("https://dummyjson.com/user/login", {
-        username: dataForm.email,
-        password: dataForm.password,
-      })
-      .then((res) => { if (res.status === 200) navigate("/"); })
-      .catch((err) => setError(err.response?.data?.message || "Login gagal"))
-      .finally(() => setLoading(false));
+    try {
+      const result = await authAPI.login(dataForm.email, dataForm.password);
+      if (result.length > 0) {
+        navigate("/");
+      } else {
+        setError("Email atau password salah");
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || "Login gagal");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
