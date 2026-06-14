@@ -6,19 +6,12 @@ import Card from "../../components/Card";
 import Badge from "../../components/Badge";
 import Button from "../../components/Button";
 import InputField from "../../components/InputField";
+import Modal from "../../components/Modal";
 import PageHeader from "../../components/PageHeader";
 import Avatar from "../../components/Avatar";
 import SelectField from "../../components/SelectField";
 import Alert from "../../components/Alert";
 import Table from "../../components/Table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "../../components/ui/dialog";
 
 const STATUS_BADGE = {
   Aktif: "success",
@@ -185,80 +178,30 @@ export default function Dokter() {
         </Table>
       </Card>
 
-      {/* shadcn Dialog — Tambah / Edit Dokter */}
-      <Dialog open={showForm} onOpenChange={(open) => { if (!open) closeForm(); }}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{isEdit ? "Edit Data Dokter" : "Tambah Dokter Baru"}</DialogTitle>
-            <DialogDescription>
-              {isEdit
-                ? "Perbarui informasi dokter di bawah ini."
-                : "Isi data lengkap dokter baru yang akan bergabung."}
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleSave} className="space-y-4 mt-2">
-            <InputField
-              label="Nama Lengkap"
-              value={form.nama}
-              onChange={(e) => setForm({ ...form, nama: e.target.value })}
-              placeholder="drg. Nama Dokter"
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <InputField
-                label="Spesialis"
-                value={form.spesialis}
-                onChange={(e) => setForm({ ...form, spesialis: e.target.value })}
-                placeholder="Umum / Ortodonti"
-              />
-              <SelectField
-                label="Status"
-                value={form.status}
-                onChange={(e) => setForm({ ...form, status: e.target.value })}
-                options={[
-                  { value: "Aktif", label: "Aktif" },
-                  { value: "Tidak Aktif", label: "Tidak Aktif" },
-                ]}
-              />
-            </div>
-            <InputField
-              label="Nomor HP"
-              value={form.noHp}
-              onChange={(e) => setForm({ ...form, noHp: e.target.value })}
-              placeholder="08xxxxxxxxxx"
-            />
-            <InputField
-              label="Email"
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              placeholder="dokter@klinik.id"
-            />
-            <InputField
-              label="Jadwal Praktik"
-              value={form.jadwal}
-              onChange={(e) => setForm({ ...form, jadwal: e.target.value })}
-              placeholder="Senin – Jumat, 08:00 – 16:00"
-            />
-
-            <DialogFooter>
-              <button
-                type="button"
-                onClick={closeForm}
-                className="px-4 py-2 text-sm rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 transition"
-              >
-                Batal
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 text-sm rounded-lg bg-[#f06b6b] hover:bg-[#e05555] text-white font-medium transition"
-              >
-                Simpan Data
-              </button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {/* Modal Tambah / Edit Dokter */}
+      <Modal isOpen={showForm} onClose={closeForm} title={isEdit ? "Edit Data Dokter" : "Tambah Dokter Baru"}>
+        <form onSubmit={handleSave} className="space-y-4">
+          <InputField label="Nama Lengkap" value={form.nama}
+            onChange={(e) => setForm({ ...form, nama: e.target.value })} placeholder="drg. Nama Dokter" />
+          <div className="grid grid-cols-2 gap-4">
+            <InputField label="Spesialis" value={form.spesialis}
+              onChange={(e) => setForm({ ...form, spesialis: e.target.value })} placeholder="Umum / Ortodonti" />
+            <SelectField label="Status" value={form.status}
+              onChange={(e) => setForm({ ...form, status: e.target.value })}
+              options={[{ value: "Aktif", label: "Aktif" }, { value: "Tidak Aktif", label: "Tidak Aktif" }]} />
+          </div>
+          <InputField label="Nomor HP" value={form.noHp}
+            onChange={(e) => setForm({ ...form, noHp: e.target.value })} placeholder="08xxxxxxxxxx" />
+          <InputField label="Email" type="email" value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="dokter@klinik.id" />
+          <InputField label="Jadwal Praktik" value={form.jadwal}
+            onChange={(e) => setForm({ ...form, jadwal: e.target.value })} placeholder="Senin – Jumat, 08:00 – 16:00" />
+          <div className="flex justify-end gap-3 pt-2">
+            <Button type="secondary" onClick={closeForm}>Batal</Button>
+            <Button type="primary">Simpan Data</Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

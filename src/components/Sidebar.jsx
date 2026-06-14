@@ -7,6 +7,9 @@ import {
   FaCalendarAlt,
   FaCog,
   FaQuestionCircle,
+  FaTag,
+  FaRobot,
+  FaGift,
 } from "react-icons/fa";
 import { MdSpaceDashboard } from "react-icons/md";
 import { NavLink } from "react-router-dom"
@@ -88,6 +91,34 @@ export default function Sidebar() {
             <NavLink to="/dokter" className={menuClass}>
               <FaUserMd className="text-xl flex-shrink-0" />
               <span>Dokter</span>
+            </NavLink>
+          </li>
+
+          {/* Section divider Marketing */}
+          <li className="pt-3">
+            <p className="px-4 text-xs font-semibold text-red-200 uppercase tracking-wider mb-1">
+              Marketing
+            </p>
+          </li>
+
+          <li>
+            <NavLink to="/diskon" className={menuClass}>
+              <FaTag className="text-xl flex-shrink-0" />
+              <span>Diskon & Promo</span>
+            </NavLink>
+          </li>
+
+          <li>
+            <NavLink to="/service-automation" className={menuClass}>
+              <FaRobot className="text-xl flex-shrink-0" />
+              <span>Service Automation</span>
+            </NavLink>
+          </li>
+
+          <li>
+            <NavLink to="/klaim-reward" className={menuClass}>
+              <FaGift className="text-xl flex-shrink-0" />
+              <span>Klaim Reward</span>
             </NavLink>
           </li>
 

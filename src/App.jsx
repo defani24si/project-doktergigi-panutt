@@ -35,6 +35,14 @@ const Register = React.lazy(() => import("./pages/auth/Register"));
 const Forgot = React.lazy(() => import("./pages/auth/Forgot"));
 const Loading = React.lazy(() => import("./components/Loading"));
 const CobaFiturXYZ = React.lazy(() => import("./pages/main/CobaFiturXYZ"));
+const Diskon = React.lazy(() => import("./pages/main/Diskon"));
+const ServiceAutomation = React.lazy(() => import("./pages/main/ServiceAutomation"));
+const KlaimReward = React.lazy(() => import("./pages/main/KlaimReward"));
+const GuestLayout = React.lazy(() => import("./layouts/GuestLayout"));
+const LandingPage = React.lazy(() => import("./pages/guest/LandingPage"));
+const LayananDokter = React.lazy(() => import("./pages/guest/LayananDokter"));
+const BookingGuest = React.lazy(() => import("./pages/guest/BookingGuest"));
+const CekStatus = React.lazy(() => import("./pages/guest/CekStatus"));
 
 function App() {
   return (
@@ -49,6 +57,9 @@ function App() {
           <Route path="/dokter" element={<Dokter />} />
           <Route path="/dokter/:id" element={<DokterDetail />} />
           <Route path="/CobaFiturXYZ" element={<CobaFiturXYZ />} />
+          <Route path="/diskon" element={<Diskon />} />
+          <Route path="/service-automation" element={<ServiceAutomation />} />
+          <Route path="/klaim-reward" element={<KlaimReward />} />
           <Route path="/error/400" element={<Error400 />} />
           <Route path="/error/401" element={<Error401 />} />
           <Route path="/error/403" element={<Error403 />} />
@@ -59,6 +70,13 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot" element={<Forgot />} />
+        </Route>
+
+        <Route element={<GuestLayout />}>
+          <Route path="/guest" element={<LandingPage />} />
+          <Route path="/guest/layanan" element={<LayananDokter />} />
+          <Route path="/guest/booking" element={<BookingGuest />} />
+          <Route path="/guest/cek-status" element={<CekStatus />} />
         </Route>
       </Routes>
       </Suspense>

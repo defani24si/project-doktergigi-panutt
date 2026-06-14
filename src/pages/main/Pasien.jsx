@@ -262,94 +262,41 @@ export default function Pasien() {
       {/* Modal */}
       <Modal isOpen={showForm} onClose={closeForm} title={isEdit ? "Edit Data Pasien" : "Tambah Pasien Baru"}>
         <form onSubmit={handleSave} className="space-y-4">
-          <InputField
-            label="Nama Lengkap"
-            value={form.nama}
-            onChange={(e) => setForm({ ...form, nama: e.target.value })}
-            placeholder="Nama lengkap pasien"
-          />
+          <InputField label="Nama Lengkap" value={form.nama}
+            onChange={(e) => setForm({ ...form, nama: e.target.value })} placeholder="Nama lengkap pasien" />
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium text-gray-700">Tanggal Lahir</label>
-              <input
-                type="date"
-                value={form.tanggalLahir}
+              <input type="date" value={form.tanggalLahir}
                 onChange={(e) => setForm({ ...form, tanggalLahir: e.target.value })}
-                className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f06b6b]"
-              />
+                className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f06b6b]" />
             </div>
-            <SelectField
-              label="Jenis Kelamin"
-              value={form.jenisKelamin}
+            <SelectField label="Jenis Kelamin" value={form.jenisKelamin}
               onChange={(e) => setForm({ ...form, jenisKelamin: e.target.value })}
-              options={[
-                { value: "L", label: "Laki-laki" },
-                { value: "P", label: "Perempuan" },
-              ]}
-            />
+              options={[{ value: "L", label: "Laki-laki" }, { value: "P", label: "Perempuan" }]} />
           </div>
-          <InputField
-            label="Nomor HP"
-            value={form.noHp}
-            onChange={(e) => setForm({ ...form, noHp: e.target.value })}
-            placeholder="08xxxxxxxxxx"
-          />
-          <InputField
-            label="Kota / Alamat"
-            value={form.alamat}
-            onChange={(e) => setForm({ ...form, alamat: e.target.value })}
-            placeholder="Kota / Kabupaten"
-          />
+          <InputField label="Nomor HP" value={form.noHp}
+            onChange={(e) => setForm({ ...form, noHp: e.target.value })} placeholder="08xxxxxxxxxx" />
+          <InputField label="Kota / Alamat" value={form.alamat}
+            onChange={(e) => setForm({ ...form, alamat: e.target.value })} placeholder="Kota / Kabupaten" />
           <div className="grid grid-cols-2 gap-4">
-            <SelectField
-              label="Status Pasien"
-              value={form.status}
+            <SelectField label="Status Pasien" value={form.status}
               onChange={(e) => setForm({ ...form, status: e.target.value })}
-              options={[
-                { value: "Aktif", label: "Aktif" },
-                { value: "Tidak Aktif", label: "Tidak Aktif" },
-              ]}
-            />
-            <SelectField
-              label="Level Membership"
-              value={form.levelMembership}
+              options={[{ value: "Aktif", label: "Aktif" }, { value: "Tidak Aktif", label: "Tidak Aktif" }]} />
+            <SelectField label="Level Membership" value={form.levelMembership}
               onChange={(e) => setForm({ ...form, levelMembership: e.target.value })}
-              options={[
-                { value: "Regular", label: "Regular" },
-                { value: "Silver", label: "Silver" },
-                { value: "Gold", label: "Gold" },
-                { value: "Platinum", label: "Platinum" },
-              ]}
-            />
+              options={[{ value: "Regular", label: "Regular" }, { value: "Silver", label: "Silver" }, { value: "Gold", label: "Gold" }, { value: "Platinum", label: "Platinum" }]} />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <InputField
-              label="Referral Code"
-              value={form.referralCode || ""}
-              onChange={(e) => setForm({ ...form, referralCode: e.target.value })}
-              placeholder="DEN0000"
-            />
-            <SelectField
-              label="Sumber Pasien"
-              value={form.sumber || ""}
+            <InputField label="Referral Code" value={form.referralCode || ""}
+              onChange={(e) => setForm({ ...form, referralCode: e.target.value })} placeholder="DEN0000" />
+            <SelectField label="Sumber Pasien" value={form.sumber || ""}
               onChange={(e) => setForm({ ...form, sumber: e.target.value })}
-              options={[
-                { value: "", label: "-- Pilih --" },
-                { value: "Instagram", label: "Instagram" },
-                { value: "TikTok", label: "TikTok" },
-                { value: "WhatsApp", label: "WhatsApp" },
-                { value: "Referral", label: "Referral" },
-                { value: "Website", label: "Website" },
-              ]}
-            />
+              options={[{ value: "", label: "-- Pilih --" }, { value: "Instagram", label: "Instagram" }, { value: "TikTok", label: "TikTok" }, { value: "WhatsApp", label: "WhatsApp" }, { value: "Referral", label: "Referral" }, { value: "Website", label: "Website" }]} />
           </div>
-          <TextArea
-            label="Catatan / Feedback"
-            value={form.catatan || ""}
+          <TextArea label="Catatan / Feedback" value={form.catatan || ""}
             onChange={(e) => setForm({ ...form, catatan: e.target.value })}
-            placeholder="Catatan atau feedback pasien..."
-            rows={3}
-          />
+            placeholder="Catatan atau feedback pasien..." rows={3} />
           <div className="flex justify-end gap-3 pt-2">
             <Button type="secondary" onClick={closeForm}>Batal</Button>
             <Button type="primary">Simpan Data</Button>
