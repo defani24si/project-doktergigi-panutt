@@ -40,7 +40,12 @@ export default function Login() {
     try {
       const result = await authAPI.login(dataForm.email, dataForm.password);
       if (result.length > 0) {
-        navigate("/");
+        const user = result[0];
+        if (user.role === "admin") {
+          navigate("/");       // → halaman admin
+        } else {
+          navigate("/guest");  // → halaman guest
+        }
       } else {
         setError("Email atau password salah");
       }
