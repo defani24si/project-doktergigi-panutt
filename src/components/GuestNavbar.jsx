@@ -34,12 +34,12 @@ export default function GuestNavbar() {
         {/* CTA Desktop */}
         <div className="hidden md:flex items-center gap-3">
           <Link to="/login" className="text-sm font-medium text-gray-600 hover:text-[#f06b6b] transition">
-            Masuk Admin
+            Login
           </Link>
-          <Link to="/guest/booking"
+          <Link to="/login"
             className="px-4 py-2 rounded-xl text-sm font-semibold text-white transition hover:opacity-90"
             style={{ backgroundColor: "#f06b6b" }}>
-            Buat Janji
+            Pesan Sekarang
           </Link>
         </div>
 
@@ -56,7 +56,13 @@ export default function GuestNavbar() {
           <NavLink to="/guest/layanan" className={({ isActive }) => `block ${isActive ? "text-[#f06b6b]" : "hover:text-[#f06b6b]"}`} onClick={() => setMenuOpen(false)}>Layanan & Dokter</NavLink>
           <NavLink to="/guest/booking" className={({ isActive }) => `block ${isActive ? "text-[#f06b6b]" : "hover:text-[#f06b6b]"}`} onClick={() => setMenuOpen(false)}>Buat Janji</NavLink>
           <NavLink to="/guest/cek-status" className={({ isActive }) => `block ${isActive ? "text-[#f06b6b]" : "hover:text-[#f06b6b]"}`} onClick={() => setMenuOpen(false)}>Cek Status</NavLink>
-          <Link to="/login" className="block text-gray-500 hover:text-[#f06b6b]" onClick={() => setMenuOpen(false)}>Masuk Admin</Link>
+          <Link to="/login" className="block text-gray-500 hover:text-[#f06b6b]" onClick={() => setMenuOpen(false)}>Login</Link>
+          <Link to="/login"
+            className="block text-center px-4 py-2 rounded-xl text-white font-semibold text-sm"
+            style={{ backgroundColor: "#f06b6b" }}
+            onClick={() => setMenuOpen(false)}>
+            Pesan Sekarang
+          </Link>
         </div>
       )}
     </nav>

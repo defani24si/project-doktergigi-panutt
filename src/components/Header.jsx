@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 const ROUTE_TITLES = {
-  "/":            { label: "Dashboard",         highlight: "Dash",       rest: "board",   breadcrumb: "Overview" },
+  "/admin":       { label: "Dashboard",         highlight: "Dash",       rest: "board",   breadcrumb: "Overview" },
   "/janji-temu":  { label: "Janji Temu",         highlight: "Janji",      rest: " Temu",   breadcrumb: "Janji Temu" },
   "/pasien":      { label: "Manajemen Pasien",   highlight: "Manajemen",  rest: " Pasien", breadcrumb: "Pasien" },
   "/dokter":      { label: "Manajemen Dokter",   highlight: "Manajemen",  rest: " Dokter", breadcrumb: "Dokter" },

@@ -41,10 +41,13 @@ export default function Login() {
       const result = await authAPI.login(dataForm.email, dataForm.password);
       if (result.length > 0) {
         const user = result[0];
+        localStorage.setItem("user", JSON.stringify(user));
         if (user.role === "admin") {
-          navigate("/");       // → halaman admin
+          navigate("/admin");
+        } else if (user.role === "member") {
+          navigate("/member");
         } else {
-          navigate("/guest");  // → halaman guest
+          navigate("/guest");
         }
       } else {
         setError("Email atau password salah");
@@ -59,7 +62,7 @@ export default function Login() {
   return (
     <div className="w-full max-w-sm mx-auto">
       <h2 className="text-2xl font-bold text-gray-800 mb-1">Sign In</h2>
-      <p className="text-sm text-gray-400 mb-6">Masuk ke akun klinik Anda</p>
+      <p className="text-sm text-gray-400 mb-6">Masuk ke akun Anda</p>
 
       {error && (
         <div className="mb-4 text-xs text-red-500 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
@@ -74,7 +77,7 @@ export default function Login() {
           name="email"
           value={dataForm.email}
           onChange={handleChange}
-          placeholder="Enter Username"
+          placeholder="Enter Email"
         />
         <InputRow
           icon={<FaLock />}
@@ -90,7 +93,6 @@ export default function Login() {
           }
         />
 
-        {/* Remember me */}
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
@@ -111,7 +113,6 @@ export default function Login() {
         </button>
       </form>
 
-      {/* Social login */}
       <div className="mt-4">
         <p className="text-xs text-gray-400 mb-2">Or, Login with</p>
         <div className="flex gap-2">
@@ -120,12 +121,9 @@ export default function Login() {
             { icon: <FaGoogle />, color: "#ea4335" },
             { icon: <FaTwitter />, color: "#1da1f2" },
           ].map(({ icon, color }, i) => (
-            <button
-              key={i}
-              type="button"
+            <button key={i} type="button"
               className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm transition hover:opacity-80"
-              style={{ backgroundColor: color }}
-            >
+              style={{ backgroundColor: color }}>
               {icon}
             </button>
           ))}

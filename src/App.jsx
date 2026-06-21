@@ -1,84 +1,93 @@
 import { Routes, Route } from "react-router-dom";
 import { ClinicProvider } from "./context/ClinicContext";
-// import Dashboard from "./pertemuan-5/pages/main/Dashboard";
+import React, { Suspense } from "react";
 
-import React, { Suspense, useState } from "react";
-// import Loading from "./components/Loading";
-// import Orders from "./pertemuan-5/pages/main/Orders";
-// import Header from "./pertemuan-5/components/Header";
-// import Customers from "./pertemuan-5/pages/main/Customers";
-// import NotFound from "./pertemuan-5/pages/main/NotFound";
-// import Error400 from "./pertemuan-5/pages/main/Error400";
-// import Error401 from "./pertemuan-5/pages/main/Error401";
-// import Error403 from "./pertemuan-5/pages/main/Error403";
-// import { MainLayout } from "./layouts/MainLayout";
-// import AuthLayout from "./layouts/AuthLayout";
-// import Login from "./pages/auth/Login";
-// import Register from "./pages/auth/Register";
-// import Forgot from "./pages/auth/Forgot";
-
-const Dashboard = React.lazy(() => import("./pages/main/Dashboard"));
-const JanjiTemu = React.lazy(() => import("./pages/main/JanjiTemu"));
-const Header = React.lazy(() => import("./components/Header"));
-const Pasien = React.lazy(() => import("./pages/main/Pasien"));
-const PasienDetail = React.lazy(() => import("./pages/main/PasienDetail"));
-const Dokter = React.lazy(() => import("./pages/main/Dokter"));
-const DokterDetail = React.lazy(() => import("./pages/main/DokterDetail"));
-const NotFound = React.lazy(() => import("./pages/main/NotFound"));
-const Error400 = React.lazy(() => import("./pages/main/Error400"));
-const Error401 = React.lazy(() => import("./pages/main/Error401"));
-const Error403 = React.lazy(() => import("./pages/main/Error403"));
-const MainLayout = React.lazy(() => import("./layouts/MainLayout"));
-const AuthLayout = React.lazy(() => import("./layouts/AuthLayout"));
-const Login = React.lazy(() => import("./pages/auth/Login"));
-const Register = React.lazy(() => import("./pages/auth/Register"));
-const Forgot = React.lazy(() => import("./pages/auth/Forgot"));
-const Loading = React.lazy(() => import("./components/Loading"));
-const CobaFiturXYZ = React.lazy(() => import("./pages/main/CobaFiturXYZ"));
-const Diskon = React.lazy(() => import("./pages/main/Diskon"));
+// Admin pages
+const Dashboard     = React.lazy(() => import("./pages/main/Dashboard"));
+const JanjiTemu     = React.lazy(() => import("./pages/main/JanjiTemu"));
+const Pasien        = React.lazy(() => import("./pages/main/Pasien"));
+const PasienDetail  = React.lazy(() => import("./pages/main/PasienDetail"));
+const Dokter        = React.lazy(() => import("./pages/main/Dokter"));
+const DokterDetail  = React.lazy(() => import("./pages/main/DokterDetail"));
+const NotFound      = React.lazy(() => import("./pages/main/NotFound"));
+const Error400      = React.lazy(() => import("./pages/main/Error400"));
+const Error401      = React.lazy(() => import("./pages/main/Error401"));
+const Error403      = React.lazy(() => import("./pages/main/Error403"));
+const CobaFiturXYZ  = React.lazy(() => import("./pages/main/CobaFiturXYZ"));
+const Diskon        = React.lazy(() => import("./pages/main/Diskon"));
 const ServiceAutomation = React.lazy(() => import("./pages/main/ServiceAutomation"));
-const KlaimReward = React.lazy(() => import("./pages/main/KlaimReward"));
-const GuestLayout = React.lazy(() => import("./layouts/GuestLayout"));
-const LandingPage = React.lazy(() => import("./pages/guest/LandingPage"));
+const KlaimReward   = React.lazy(() => import("./pages/main/KlaimReward"));
+
+// Layouts
+const MainLayout    = React.lazy(() => import("./layouts/MainLayout"));
+const AuthLayout    = React.lazy(() => import("./layouts/AuthLayout"));
+const GuestLayout   = React.lazy(() => import("./layouts/GuestLayout"));
+const MemberLayout  = React.lazy(() => import("./layouts/MemberLayout"));
+
+// Auth pages
+const Login         = React.lazy(() => import("./pages/auth/Login"));
+const Register      = React.lazy(() => import("./pages/auth/Register"));
+const Forgot        = React.lazy(() => import("./pages/auth/Forgot"));
+
+// Guest pages (bebas akses, tidak perlu login)
+const LandingPage   = React.lazy(() => import("./pages/guest/LandingPage"));
 const LayananDokter = React.lazy(() => import("./pages/guest/LayananDokter"));
-const BookingGuest = React.lazy(() => import("./pages/guest/BookingGuest"));
-const CekStatus = React.lazy(() => import("./pages/guest/CekStatus"));
+const BookingGuest  = React.lazy(() => import("./pages/guest/BookingGuest"));
+const CekStatus     = React.lazy(() => import("./pages/guest/CekStatus"));
+
+// Member pages (harus login sebagai member)
+const MemberPage    = React.lazy(() => import("./pages/guest/MemberPage"));
+
+const Loading       = React.lazy(() => import("./components/Loading"));
 
 function App() {
   return (
     <ClinicProvider>
       <Suspense fallback={<Loading />}>
-      <Routes>
-        <Route element={<MainLayout />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/janji-temu" element={<JanjiTemu />} />
-          <Route path="/pasien" element={<Pasien />} />
-          <Route path="/pasien/:id" element={<PasienDetail/>} />
-          <Route path="/dokter" element={<Dokter />} />
-          <Route path="/dokter/:id" element={<DokterDetail />} />
-          <Route path="/CobaFiturXYZ" element={<CobaFiturXYZ />} />
-          <Route path="/diskon" element={<Diskon />} />
-          <Route path="/service-automation" element={<ServiceAutomation />} />
-          <Route path="/klaim-reward" element={<KlaimReward />} />
-          <Route path="/error/400" element={<Error400 />} />
-          <Route path="/error/401" element={<Error401 />} />
-          <Route path="/error/403" element={<Error403 />} />
+        <Routes>
+
+          {/* ── GUEST (bebas akses) ── */}
+          <Route element={<GuestLayout />}>
+            <Route path="/"                   element={<LandingPage />} />
+            <Route path="/guest"              element={<LandingPage />} />
+            <Route path="/guest/layanan"      element={<LayananDokter />} />
+            <Route path="/guest/booking"      element={<BookingGuest />} />
+            <Route path="/guest/cek-status"   element={<CekStatus />} />
+          </Route>
+
+          {/* ── MEMBER (harus login) ── */}
+          <Route element={<MemberLayout />}>
+            <Route path="/member"             element={<MemberPage />} />
+          </Route>
+
+          {/* ── AUTH ── */}
+          <Route element={<AuthLayout />}>
+            <Route path="/login"              element={<Login />} />
+            <Route path="/register"           element={<Register />} />
+            <Route path="/forgot"             element={<Forgot />} />
+          </Route>
+
+          {/* ── ADMIN (harus login sebagai admin) ── */}
+          <Route element={<MainLayout />}>
+            <Route path="/admin"              element={<Dashboard />} />
+            <Route path="/janji-temu"         element={<JanjiTemu />} />
+            <Route path="/pasien"             element={<Pasien />} />
+            <Route path="/pasien/:id"         element={<PasienDetail />} />
+            <Route path="/dokter"             element={<Dokter />} />
+            <Route path="/dokter/:id"         element={<DokterDetail />} />
+            <Route path="/CobaFiturXYZ"       element={<CobaFiturXYZ />} />
+            <Route path="/diskon"             element={<Diskon />} />
+            <Route path="/service-automation" element={<ServiceAutomation />} />
+            <Route path="/klaim-reward"       element={<KlaimReward />} />
+            <Route path="/error/400"          element={<Error400 />} />
+            <Route path="/error/401"          element={<Error401 />} />
+            <Route path="/error/403"          element={<Error403 />} />
+          </Route>
+
+          {/* ── 404 ── */}
           <Route path="*" element={<NotFound />} />
-        </Route>
 
-        <Route element={<AuthLayout />}>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot" element={<Forgot />} />
-        </Route>
-
-        <Route element={<GuestLayout />}>
-          <Route path="/guest" element={<LandingPage />} />
-          <Route path="/guest/layanan" element={<LayananDokter />} />
-          <Route path="/guest/booking" element={<BookingGuest />} />
-          <Route path="/guest/cek-status" element={<CekStatus />} />
-        </Route>
-      </Routes>
+        </Routes>
       </Suspense>
     </ClinicProvider>
   );

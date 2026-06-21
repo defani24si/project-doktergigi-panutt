@@ -58,11 +58,11 @@ export default function LandingPage() {
               Panutt Dental Clinic hadir dengan dokter gigi berpengalaman dan peralatan modern untuk memberikan perawatan terbaik bagi Anda dan keluarga.
             </p>
             <div className="flex flex-wrap gap-3">
-              <a href="#booking"
+              <Link to="/login"
                 className="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm transition hover:opacity-90 shadow-md"
                 style={{ backgroundColor: "#f06b6b" }}>
-                <FaCalendarAlt /> Buat Janji Sekarang
-              </a>
+                <FaCalendarAlt /> Pesan Sekarang
+              </Link>
               <a href="#layanan"
                 className="flex items-center gap-2 px-6 py-3 rounded-xl text-gray-700 font-semibold text-sm border border-gray-200 hover:bg-gray-50 transition">
                 Lihat Layanan <FaArrowRight className="text-xs" />
