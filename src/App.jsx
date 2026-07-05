@@ -18,6 +18,8 @@ const Diskon        = React.lazy(() => import("./pages/main/Diskon"));
 const ServiceAutomation = React.lazy(() => import("./pages/main/ServiceAutomation"));
 const KlaimReward   = React.lazy(() => import("./pages/main/KlaimReward"));
 const Feedback      = React.lazy(() => import("./pages/main/Feedback"));
+const Transaksi     = React.lazy(() => import("./pages/main/Transaksi"));
+const CatatanKesehatan = React.lazy(() => import("./pages/main/CatatanKesehatan"));
 
 // Layouts
 const MainLayout    = React.lazy(() => import("./layouts/MainLayout"));
@@ -85,6 +87,8 @@ function App() {
             <Route path="/service-automation" element={<ServiceAutomation />} />
             <Route path="/klaim-reward"       element={<KlaimReward />} />
             <Route path="/feedback"           element={<Feedback />} />
+            <Route path="/transaksi"          element={<Transaksi />} />
+            <Route path="/catatan-kesehatan"  element={<CatatanKesehatan />} />
             <Route path="/error/400"          element={<Error400 />} />
             <Route path="/error/401"          element={<Error401 />} />
             <Route path="/error/403"          element={<Error403 />} />

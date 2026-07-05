@@ -8,6 +8,8 @@ const ROUTE_TITLES = {
   "/pasien":      { label: "Manajemen Pasien",   highlight: "Manajemen",  rest: " Pasien", breadcrumb: "Pasien" },
   "/dokter":      { label: "Manajemen Dokter",   highlight: "Manajemen",  rest: " Dokter", breadcrumb: "Dokter" },
   "/feedback":    { label: "Feedback & Rating",   highlight: "Feedback",   rest: " & Rating", breadcrumb: "Feedback" },
+  "/transaksi":   { label: "Manajemen Transaksi",  highlight: "Manajemen",  rest: " Transaksi",        breadcrumb: "Transaksi" },
+  "/catatan-kesehatan": { label: "Catatan Kesehatan", highlight: "Catatan",  rest: " Kesehatan",        breadcrumb: "Catatan Kesehatan" },
   "/diskon":      { label: "Diskon & Promo",      highlight: "Diskon",     rest: " & Promo", breadcrumb: "Marketing" },
   "/service-automation": { label: "Service Automation", highlight: "Service", rest: " Automation", breadcrumb: "Marketing" },
   "/member":      { label: "Member Dashboard",   highlight: "Member",     rest: " Dashboard", breadcrumb: "Member" },

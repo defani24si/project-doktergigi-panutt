@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useClinic } from "../../context/ClinicContext";
+import { useClinic } from "../../context/useClinic";
+import { useState, useEffect } from "react";
 import {
   FaArrowLeft,
   FaUserMd,
@@ -16,6 +17,7 @@ import Card from "../../components/Card";
 import Avatar from "../../components/Avatar";
 import PageHeader from "../../components/PageHeader";
 import Table from "../../components/Table";
+import { janjiTemuService } from "../../services/supabaseService";
 
 const STATUS_BADGE = {
   Aktif: "success",
@@ -27,6 +29,24 @@ export default function DokterDetail() {
   const navigate = useNavigate();
   const { doctors } = useClinic();
   const dokter = doctors.find((d) => d.id === id);
+
+  // Riwayat pasien dari tabel janji_temu yang sudah Selesai
+  const [riwayat, setRiwayat] = useState([]);
+  const [loadingRiwayat, setLoadingRiwayat] = useState(true);
+
+  useEffect(() => {
+    if (!dokter) return;
+    janjiTemuService.getAll()
+      .then((data) => {
+        // Filter janji yang ditangani dokter ini dan statusnya Selesai
+        const filtered = data.filter(
+          (j) => (j.dokterNama === dokter.nama || j.dokter_nama === dokter.nama) && j.status === "Selesai"
+        );
+        setRiwayat(filtered);
+      })
+      .catch((err) => console.error("Gagal load riwayat:", err))
+      .finally(() => setLoadingRiwayat(false));
+  }, [dokter?.nama]);
 
   if (!dokter) {
     return (
@@ -131,15 +151,34 @@ export default function DokterDetail() {
         <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
           <FaClipboardList className="text-teal-500" />
           <h3 className="text-sm font-bold text-gray-700">Riwayat Pasien Ditangani</h3>
+          <span className="ml-auto text-xs bg-teal-50 text-teal-600 font-semibold px-2 py-0.5 rounded-full">
+            {riwayat.length} pasien
+          </span>
         </div>
-        {dokter.riwayatPasien && dokter.riwayatPasien.length > 0 ? (
-          <Table headers={["No", "Tanggal", "Nama Pasien", "Tindakan"]}>
-            {dokter.riwayatPasien.map((item) => (
-              <tr key={item.id} className="hover:bg-teal-50/30 transition text-sm">
-                <td className="px-4 py-3 text-gray-400">{item.id}</td>
-                <td className="px-4 py-3 text-gray-600">{item.tanggal}</td>
-                <td className="px-4 py-3 font-semibold text-gray-800">{item.pasien}</td>
-                <td className="px-4 py-3 text-gray-700">{item.tindakan}</td>
+
+        {loadingRiwayat ? (
+          <p className="text-sm text-gray-400">Memuat data...</p>
+        ) : riwayat.length > 0 ? (
+          <Table headers={["No", "Tanggal", "Nama Pasien", "Layanan", "Keluhan", "Status"]}>
+            {riwayat.map((item, i) => (
+              <tr key={item.id || item.uuid} className="hover:bg-teal-50/30 transition text-sm">
+                <td className="px-4 py-3 text-gray-400 text-xs">{i + 1}</td>
+                <td className="px-4 py-3 text-gray-600 text-xs">{item.tanggal}</td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <Avatar name={item.pasienNama || item.pasien_nama} />
+                    <span className="font-semibold text-gray-800 text-xs">
+                      {item.pasienNama || item.pasien_nama}
+                    </span>
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-gray-700 text-xs">{item.layanan}</td>
+                <td className="px-4 py-3 text-gray-500 text-xs max-w-xs truncate">
+                  {item.keluhan || "-"}
+                </td>
+                <td className="px-4 py-3">
+                  <Badge type="success">{item.status}</Badge>
+                </td>
               </tr>
             ))}
           </Table>

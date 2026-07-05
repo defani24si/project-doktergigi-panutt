@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { FaPlus, FaSearch, FaCalendarDay } from "react-icons/fa";
-import { useClinic } from "../../context/ClinicContext";
+import { useClinic } from "../../context/useClinic";
 import Card from "../../components/Card";
 import Badge from "../../components/Badge";
 import Button from "../../components/Button";

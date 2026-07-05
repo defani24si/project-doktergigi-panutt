@@ -298,6 +298,120 @@ export const automationService = {
 };
 
 // =====================================================
+// CATATAN KESEHATAN SERVICE
+// =====================================================
+export const catatanKesehatanService = {
+  async getAll() {
+    const res = await axios.get(`${API_URL}/catatan_kesehatan?order=tanggal.desc`, { headers });
+    return res.data;
+  },
+
+  async getByEmail(email) {
+    const res = await axios.get(`${API_URL}/catatan_kesehatan?pasien_email=eq.${encodeURIComponent(email)}&order=tanggal.desc`, { headers });
+    return res.data;
+  },
+
+  async getByNama(nama) {
+    const res = await axios.get(`${API_URL}/catatan_kesehatan?pasien_nama=eq.${encodeURIComponent(nama)}&order=tanggal.desc`, { headers });
+    return res.data;
+  },
+
+  async create(data) {
+    const payload = {
+      pasien_nama: data.pasienNama,
+      pasien_email: data.pasienEmail || null,
+      tanggal: data.tanggal,
+      tindakan: data.tindakan,
+      dokter: data.dokter || null,
+      diagnosis: data.diagnosis || null,
+      resep: data.resep || null,
+      biaya: Number(data.biaya) || 0,
+      status: data.status || 'Selesai',
+    };
+    const res = await axios.post(`${API_URL}/catatan_kesehatan`, payload, { headers });
+    return res.data[0];
+  },
+
+  async update(id, data) {
+    const payload = {
+      pasien_nama: data.pasienNama,
+      pasien_email: data.pasienEmail || null,
+      tanggal: data.tanggal,
+      tindakan: data.tindakan,
+      dokter: data.dokter || null,
+      diagnosis: data.diagnosis || null,
+      resep: data.resep || null,
+      biaya: Number(data.biaya) || 0,
+      status: data.status || 'Selesai',
+    };
+    const res = await axios.patch(`${API_URL}/catatan_kesehatan?id=eq.${id}`, payload, { headers });
+    return res.data[0];
+  },
+
+  async delete(id) {
+    await axios.delete(`${API_URL}/catatan_kesehatan?id=eq.${id}`, { headers });
+  },
+};
+
+// =====================================================
+// TRANSAKSI SERVICE
+// =====================================================
+export const transaksiService = {
+  async getAll() {
+    const res = await axios.get(`${API_URL}/transaksi?order=tanggal.desc`, { headers });
+    return res.data;
+  },
+
+  async getByEmail(email) {
+    const res = await axios.get(`${API_URL}/transaksi?pasien_email=eq.${encodeURIComponent(email)}&order=tanggal.desc`, { headers });
+    return res.data;
+  },
+
+  async create(data) {
+    // Generate ID
+    const res = await axios.get(`${API_URL}/transaksi?select=trx_id`, { headers });
+    const nextNum = res.data.length + 1;
+    const trxId = `TRX-${String(nextNum).padStart(3, "0")}`;
+    const year = new Date().getFullYear();
+    const invoice = `INV-${year}-${String(nextNum).padStart(3, "0")}`;
+
+    const payload = {
+      trx_id: trxId,
+      invoice,
+      pasien_nama: data.pasienNama,
+      pasien_email: data.pasienEmail || null,
+      layanan: data.layanan,
+      dokter_nama: data.dokterNama || null,
+      tanggal: data.tanggal,
+      biaya: Number(data.biaya) || 0,
+      diskon_persen: Number(data.diskonPersen) || 0,
+      diskon_nominal: Number(data.diskonNominal) || 0,
+      total: Number(data.total) || Number(data.biaya) || 0,
+      metode_pembayaran: data.metodePembayaran || null,
+      kode_promo: data.kodePromo || null,
+      status: data.status || 'Pending',
+      catatan: data.catatan || null,
+    };
+    const created = await axios.post(`${API_URL}/transaksi`, payload, { headers });
+    return created.data[0];
+  },
+
+  async updateStatus(id, status) {
+    const res = await axios.patch(`${API_URL}/transaksi?id=eq.${id}`, { status }, { headers });
+    return res.data[0];
+  },
+
+  async update(id, data) {
+    const res = await axios.patch(`${API_URL}/transaksi?id=eq.${id}`, data, { headers });
+    return res.data[0];
+  },
+
+  async delete(id) {
+    await axios.delete(`${API_URL}/transaksi?id=eq.${id}`, { headers });
+  },
+};
+
+// =====================================================
 // FEEDBACK & RATING SERVICE
 // =====================================================
 export const feedbackService = {

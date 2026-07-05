@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { FaPlus, FaSearch, FaEdit, FaUserAlt, FaNotesMedical, FaCrown } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { useClinic } from "../../context/ClinicContext";
+import { useClinic } from "../../context/useClinic";
 import Card from "../../components/Card";
 import Badge from "../../components/Badge";
 import Button from "../../components/Button";

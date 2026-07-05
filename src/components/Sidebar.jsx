@@ -2,7 +2,7 @@ import {
   FaUserFriends, FaUserMd, FaSignOutAlt,
   FaCalendarAlt, FaTag, FaRobot, FaStar,
   FaTimes, FaExclamationTriangle, FaCog, FaQuestionCircle,
-  FaChevronLeft, FaChevronRight,
+  FaChevronLeft, FaChevronRight, FaFileInvoiceDollar, FaNotesMedical,
 } from "react-icons/fa";
 import { MdSpaceDashboard } from "react-icons/md";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -38,6 +38,8 @@ export default function Sidebar({ collapsed, onToggle, onMobileClose }) {
     { to: "/pasien",             icon: <FaUserFriends    className="text-xl flex-shrink-0" />, label: "Pasien" },
     { to: "/dokter",             icon: <FaUserMd         className="text-xl flex-shrink-0" />, label: "Dokter" },
     { to: "/feedback",           icon: <FaStar           className="text-xl flex-shrink-0" />, label: "Feedback & Rating" },
+    { to: "/transaksi",          icon: <FaFileInvoiceDollar className="text-xl flex-shrink-0" />, label: "Transaksi" },
+    { to: "/catatan-kesehatan",  icon: <FaNotesMedical      className="text-xl flex-shrink-0" />, label: "Catatan Kesehatan" },
     { to: "/diskon",             icon: <FaTag            className="text-xl flex-shrink-0" />, label: "Diskon & Promo" },
     { to: "/service-automation", icon: <FaRobot          className="text-xl flex-shrink-0" />, label: "Service Automation" },
     { to: "/error/400",          icon: <FaExclamationTriangle className="text-xl flex-shrink-0 text-yellow-200" />, label: "Error 400" },

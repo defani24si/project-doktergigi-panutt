@@ -4,7 +4,7 @@ import PageHeader from "../../components/PageHeader";
 import Card from "../../components/Card";
 import Badge from "../../components/Badge";
 import Alert from "../../components/Alert";
-import { useClinic } from "../../context/ClinicContext";
+import { useClinic } from "../../context/useClinic";
 
 const REWARDS = [
   { id: 1, nama: "Diskon 10% Scaling", poin: 100, keterangan: "Berlaku untuk layanan Scaling Gigi" },
