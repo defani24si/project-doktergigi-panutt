@@ -1,4 +1,4 @@
-import { FaBell, FaSearch, FaCommentDots } from "react-icons/fa";
+import { FaBell, FaSearch, FaCommentDots, FaBars } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -24,7 +24,7 @@ function getTitle(pathname) {
   return prefix ? ROUTE_TITLES[prefix] : { label: "Dashboard", highlight: "Dash", rest: "board", breadcrumb: "Overview" };
 }
 
-export default function Header() {
+export default function Header({ onMenuToggle }) {
   const [time, setTime] = useState(new Date());
   const [currentUser, setCurrentUser] = useState(null);
   const location = useLocation();
@@ -66,16 +66,26 @@ export default function Header() {
       id="header-container"
       className="flex justify-between items-center px-6 py-3 bg-white border-b border-gray-100 shadow-sm"
     >
-      {/* Left: Dynamic Title + Breadcrumb */}
-      <div className="flex flex-col justify-center">
-        <h1 className="text-xl font-bold text-gray-800 leading-tight">
-          <span style={{ color: "#f06b6b" }}>{highlight}</span>
-          {rest}
-        </h1>
-        <div className="flex items-center space-x-1 text-xs mt-0.5">
-          <span className="text-gray-400">Dashboard</span>
-          <span className="text-gray-300">/</span>
-          <span className="text-gray-400">{breadcrumb}</span>
+      {/* Left: Hamburger (mobile) + Dynamic Title + Breadcrumb */}
+      <div className="flex items-center gap-3">
+        {onMenuToggle && (
+          <button
+            onClick={onMenuToggle}
+            className="md:hidden w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-lg transition"
+          >
+            <FaBars size={16} />
+          </button>
+        )}
+        <div className="flex flex-col justify-center">
+          <h1 className="text-xl font-bold text-gray-800 leading-tight">
+            <span style={{ color: "#f06b6b" }}>{highlight}</span>
+            {rest}
+          </h1>
+          <div className="flex items-center space-x-1 text-xs mt-0.5">
+            <span className="text-gray-400">Dashboard</span>
+            <span className="text-gray-300">/</span>
+            <span className="text-gray-400">{breadcrumb}</span>
+          </div>
         </div>
       </div>
 
