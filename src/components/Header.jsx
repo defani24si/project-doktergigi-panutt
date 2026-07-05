@@ -7,6 +7,10 @@ const ROUTE_TITLES = {
   "/janji-temu":  { label: "Janji Temu",         highlight: "Janji",      rest: " Temu",   breadcrumb: "Janji Temu" },
   "/pasien":      { label: "Manajemen Pasien",   highlight: "Manajemen",  rest: " Pasien", breadcrumb: "Pasien" },
   "/dokter":      { label: "Manajemen Dokter",   highlight: "Manajemen",  rest: " Dokter", breadcrumb: "Dokter" },
+  "/feedback":    { label: "Feedback & Rating",   highlight: "Feedback",   rest: " & Rating", breadcrumb: "Feedback" },
+  "/diskon":      { label: "Diskon & Promo",      highlight: "Diskon",     rest: " & Promo", breadcrumb: "Marketing" },
+  "/service-automation": { label: "Service Automation", highlight: "Service", rest: " Automation", breadcrumb: "Marketing" },
+  "/member":      { label: "Member Dashboard",   highlight: "Member",     rest: " Dashboard", breadcrumb: "Member" },
   "/error/400":   { label: "Error 400",          highlight: "Error",      rest: " 400",    breadcrumb: "400" },
   "/error/401":   { label: "Error 401",          highlight: "Error",      rest: " 401",    breadcrumb: "401" },
   "/error/403":   { label: "Error 403",          highlight: "Error",      rest: " 403",    breadcrumb: "403" },
@@ -22,6 +26,7 @@ function getTitle(pathname) {
 
 export default function Header() {
   const [time, setTime] = useState(new Date());
+  const [currentUser, setCurrentUser] = useState(null);
   const location = useLocation();
   const { highlight, rest, breadcrumb } = getTitle(location.pathname);
 
@@ -30,9 +35,31 @@ export default function Header() {
     return () => clearInterval(interval);
   }, []);
 
+  // Get user dari localStorage
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      try {
+        setCurrentUser(JSON.parse(user));
+      } catch (e) {
+        console.error("Error parsing user:", e);
+      }
+    }
+  }, []);
+
   const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
   const dayName = days[time.getDay()];
   const dateStr = `${String(time.getDate()).padStart(2,"0")}/${String(time.getMonth()+1).padStart(2,"0")}/${time.getFullYear()}`;
+
+  // Get initial dari nama untuk avatar
+  const getInitials = (name) => {
+    if (!name) return "?";
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  const userName = currentUser?.full_name || "Guest";
+  const userEmail = currentUser?.email || "guest@example.com";
+  const initials = getInitials(userName);
 
   return (
     <div
@@ -93,17 +120,19 @@ export default function Header() {
           <p className="text-xs font-bold" style={{ color: "#f06b6b" }}>{dateStr}</p>
         </div>
 
-        {/* User */}
+        {/* User - Dynamic */}
         <div className="flex items-center gap-2 ml-2 pl-2 border-l border-gray-200">
           <div className="text-right">
-            <p className="text-xs font-semibold text-gray-700">Panutt Admin</p>
-            <p className="text-[10px] text-gray-400">admin@panutt.com</p>
+            <p className="text-xs font-semibold text-gray-700">{userName}</p>
+            <p className="text-[10px] text-gray-400">{userEmail}</p>
           </div>
-          <img
-            src="https://avatar.iran.liara.run/public/28"
-            alt="avatar"
-            className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-          />
+          {/* Avatar dengan initials */}
+          <div 
+            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+            style={{ backgroundColor: "#f06b6b" }}
+          >
+            {initials}
+          </div>
         </div>
       </div>
     </div>

@@ -17,6 +17,7 @@ const CobaFiturXYZ  = React.lazy(() => import("./pages/main/CobaFiturXYZ"));
 const Diskon        = React.lazy(() => import("./pages/main/Diskon"));
 const ServiceAutomation = React.lazy(() => import("./pages/main/ServiceAutomation"));
 const KlaimReward   = React.lazy(() => import("./pages/main/KlaimReward"));
+const Feedback      = React.lazy(() => import("./pages/main/Feedback"));
 
 // Layouts
 const MainLayout    = React.lazy(() => import("./layouts/MainLayout"));
@@ -37,6 +38,7 @@ const CekStatus     = React.lazy(() => import("./pages/guest/CekStatus"));
 
 // Member pages (harus login sebagai member)
 const MemberPage    = React.lazy(() => import("./pages/guest/MemberPage"));
+const TestDatabase  = React.lazy(() => import("./pages/TestDatabase"));
 
 const Loading       = React.lazy(() => import("./components/Loading"));
 
@@ -67,6 +69,9 @@ function App() {
             <Route path="/forgot"             element={<Forgot />} />
           </Route>
 
+          {/* ── TEST DATABASE ── */}
+          <Route path="/test-database"        element={<TestDatabase />} />
+
           {/* ── ADMIN (harus login sebagai admin) ── */}
           <Route element={<MainLayout />}>
             <Route path="/admin"              element={<Dashboard />} />
@@ -79,6 +84,7 @@ function App() {
             <Route path="/diskon"             element={<Diskon />} />
             <Route path="/service-automation" element={<ServiceAutomation />} />
             <Route path="/klaim-reward"       element={<KlaimReward />} />
+            <Route path="/feedback"           element={<Feedback />} />
             <Route path="/error/400"          element={<Error400 />} />
             <Route path="/error/401"          element={<Error401 />} />
             <Route path="/error/403"          element={<Error403 />} />

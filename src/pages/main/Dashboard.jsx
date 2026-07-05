@@ -9,8 +9,37 @@ import Alert from "../../components/Alert";
 import { useState } from "react";
 
 export default function Dashboard() {
-  const { patients, appointments } = useClinic();
+  const { patients, appointments, loading, error } = useClinic();
   const [showAlert, setShowAlert] = useState(true);
+
+  // Show loading
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#f06b6b] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center max-w-md">
+          <p className="text-red-600 mb-4">❌ {error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-[#f06b6b] text-white rounded-lg hover:opacity-90"
+          >
+            Reload Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const totalPasien = patients.length;
   const totalJanjiSelesai = appointments.filter((a) => a.status === "Selesai").length;
@@ -98,11 +127,11 @@ export default function Dashboard() {
             ) : (
               recentAppointments.map((appt, i) => (
                 <tr key={i} className="hover:bg-gray-50 transition-colors text-sm">
-                  <td className="px-4 py-3 font-bold text-gray-700">{appt.id}</td>
+                  <td className="px-4 py-3 font-bold text-gray-700">{appt.janji_id || appt.id}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <Avatar name={appt.pasienNama} />
-                      <span className="text-gray-700">{appt.pasienNama}</span>
+                      <Avatar name={appt.pasien_nama || appt.pasienNama} />
+                      <span className="text-gray-700">{appt.pasien_nama || appt.pasienNama}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3">

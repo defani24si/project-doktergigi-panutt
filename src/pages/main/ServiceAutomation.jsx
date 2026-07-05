@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaWhatsapp, FaEnvelope, FaPlus, FaTrash, FaPaperPlane, FaRobot, FaBolt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 import PageHeader from "../../components/PageHeader";
 import Card from "../../components/Card";
@@ -6,33 +6,9 @@ import Badge from "../../components/Badge";
 import Button from "../../components/Button";
 import Modal from "../../components/Modal";
 import Alert from "../../components/Alert";
+import { automationService } from "../../services/supabaseService";
 
-const INITIAL_AUTOMATIONS = [
-  {
-    id: 1,
-    nama: "Reminder Janji Temu",
-    channel: "WhatsApp",
-    trigger: "H-1 sebelum janji temu",
-    pesan: "Halo {nama_pasien}, mengingatkan janji temu Anda besok pada pukul {jam} dengan {dokter}. Harap datang tepat waktu. 😊",
-    status: "Aktif",
-  },
-  {
-    id: 2,
-    nama: "Ucapan Selamat Datang",
-    channel: "Email",
-    trigger: "Pasien baru terdaftar",
-    pesan: "Selamat datang di Panutt Dental Clinic, {nama_pasien}! Kami siap memberikan pelayanan terbaik untuk kesehatan gigi Anda.",
-    status: "Aktif",
-  },
-  {
-    id: 3,
-    nama: "Follow-up Setelah Perawatan",
-    channel: "WhatsApp",
-    trigger: "H+1 setelah selesai",
-    pesan: "Halo {nama_pasien}, bagaimana kondisi setelah perawatan kemarin? Jika ada keluhan, jangan ragu menghubungi kami.",
-    status: "Tidak Aktif",
-  },
-];
+const INITIAL_AUTOMATIONS = [];
 
 const EMPTY_FORM = { nama: "", channel: "WhatsApp", trigger: "", pesan: "" };
 
@@ -48,22 +24,52 @@ export default function ServiceAutomation() {
   const [successAlert, setSuccessAlert] = useState("");
   const [testAlert, setTestAlert] = useState("");
 
-  const handleSave = (e) => {
+  // Load dari Supabase
+  useEffect(() => {
+    loadAutomations();
+  }, []);
+
+  const loadAutomations = async () => {
+    try {
+      const data = await automationService.getAll();
+      setAutomations(data);
+    } catch (err) {
+      console.error("Gagal load automation:", err);
+    }
+  };
+
+  const handleSave = async (e) => {
     e.preventDefault();
-    const newAuto = { id: automations.length + 1, ...form, status: "Aktif" };
-    setAutomations([...automations, newAuto]);
-    setSuccessAlert(`Automation "${form.nama}" berhasil dibuat.`);
-    setShowForm(false);
-    setForm(EMPTY_FORM);
+    try {
+      await automationService.create(form);
+      await loadAutomations();
+      setSuccessAlert(`Automation "${form.nama}" berhasil dibuat.`);
+      setShowForm(false);
+      setForm(EMPTY_FORM);
+    } catch (err) {
+      console.error("Gagal simpan automation:", err);
+      alert("Gagal menyimpan automation. Cek koneksi database.");
+    }
     setTimeout(() => setSuccessAlert(""), 4000);
   };
 
-  const handleDelete = (id) => setAutomations(automations.filter((a) => a.id !== id));
+  const handleDelete = async (id) => {
+    try {
+      await automationService.delete(id);
+      await loadAutomations();
+    } catch (err) {
+      console.error("Gagal hapus automation:", err);
+    }
+  };
 
-  const toggleStatus = (id) => {
-    setAutomations(automations.map((a) =>
-      a.id === id ? { ...a, status: a.status === "Aktif" ? "Tidak Aktif" : "Aktif" } : a
-    ));
+  const toggleStatus = async (id, currentStatus) => {
+    try {
+      const newStatus = currentStatus === "Aktif" ? "Tidak Aktif" : "Aktif";
+      await automationService.updateStatus(id, newStatus);
+      await loadAutomations();
+    } catch (err) {
+      console.error("Gagal toggle status:", err);
+    }
   };
 
   const handleTest = (item) => {
@@ -197,7 +203,7 @@ export default function ServiceAutomation() {
                       <FaPaperPlane className="text-xs" /> Test Kirim
                     </button>
                     <button
-                      onClick={() => toggleStatus(item.id)}
+                      onClick={() => toggleStatus(item.id, item.status)}
                       className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl transition ${
                         item.status === "Aktif"
                           ? "bg-yellow-50 text-yellow-600 border border-yellow-200 hover:bg-yellow-100"

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
-import { authAPI } from "../../services/notesAPI";
+import { authServiceSimple } from "../../services/authServiceSimple";
 
 function InputRow({ icon, type, name, value, onChange, placeholder, rightEl, error }) {
   return (
@@ -25,8 +25,10 @@ function InputRow({ icon, type, name, value, onChange, placeholder, rightEl, err
 
 export default function Register() {
   const [form, setForm] = useState({
-    firstName: "", lastName: "", username: "",
-    email: "", password: "", confirmPassword: "",
+    fullName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -42,11 +44,10 @@ export default function Register() {
 
   const validate = () => {
     const e = {};
-    if (!form.firstName) e.firstName = "Wajib diisi";
-    if (!form.lastName) e.lastName = "Wajib diisi";
-    if (!form.username) e.username = "Wajib diisi";
-    if (!form.email) e.email = "Wajib diisi";
-    if (!form.password) e.password = "Wajib diisi";
+    if (!form.fullName) e.fullName = "Nama lengkap wajib diisi";
+    if (!form.email) e.email = "Email wajib diisi";
+    if (!form.password) e.password = "Password wajib diisi";
+    if (form.password.length < 6) e.password = "Password minimal 6 karakter";
     if (form.password !== form.confirmPassword) e.confirmPassword = "Password tidak cocok";
     if (!agreed) e.terms = "Harus disetujui";
     return e;
@@ -56,11 +57,18 @@ export default function Register() {
     e.preventDefault();
     const e2 = validate();
     if (Object.keys(e2).length > 0) { setErrors(e2); return; }
+    
     try {
-      await authAPI.register(form);
+      await authServiceSimple.register(
+        form.fullName,
+        form.email,
+        form.password,
+        'member' // default role
+      );
       setSuccess(true);
     } catch (err) {
-      setErrors({ general: err.response?.data?.message || "Registrasi gagal, coba lagi" });
+      console.error("Register error:", err);
+      setErrors({ general: err.message || "Registrasi gagal, coba lagi" });
     }
   };
 
@@ -94,35 +102,15 @@ export default function Register() {
             {errors.general}
           </div>
         )}
-        <div className="grid grid-cols-2 gap-2.5">
-          <InputRow
-            icon={<FaUser />}
-            type="text"
-            name="firstName"
-            value={form.firstName}
-            onChange={handleChange}
-            placeholder="Enter First Name"
-            error={errors.firstName}
-          />
-          <InputRow
-            icon={<FaUser />}
-            type="text"
-            name="lastName"
-            value={form.lastName}
-            onChange={handleChange}
-            placeholder="Enter Last Name"
-            error={errors.lastName}
-          />
-        </div>
-
+        
         <InputRow
           icon={<FaUser />}
           type="text"
-          name="username"
-          value={form.username}
+          name="fullName"
+          value={form.fullName}
           onChange={handleChange}
-          placeholder="Enter Username"
-          error={errors.username}
+          placeholder="Enter Full Name"
+          error={errors.fullName}
         />
 
         <InputRow

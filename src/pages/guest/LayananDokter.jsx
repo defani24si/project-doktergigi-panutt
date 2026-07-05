@@ -3,14 +3,14 @@ import { Link } from "react-router-dom";
 import { FaCalendarAlt, FaArrowRight, FaSearch } from "react-icons/fa";
 
 const SERVICES = [
-  { icon: "🦷", nama: "Konsultasi Gigi", desc: "Pemeriksaan menyeluruh dan konsultasi dengan dokter spesialis untuk mengetahui kondisi gigi Anda.", harga: "Rp 75.000", durasi: "30 menit", kategori: "Umum" },
-  { icon: "✨", nama: "Scaling / Pembersihan", desc: "Membersihkan karang gigi secara profesional untuk gigi sehat, nafas segar, dan gusi kuat.", harga: "Rp 150.000", durasi: "45 menit", kategori: "Umum" },
-  { icon: "🔧", nama: "Tambal Gigi Komposit", desc: "Penambalan gigi berlubang dengan material komposit berwarna alami, tahan lama dan estetis.", harga: "Rp 200.000", durasi: "60 menit", kategori: "Konservasi" },
-  { icon: "😁", nama: "Pemutihan Gigi", desc: "Whitening profesional menggunakan teknologi terkini untuk senyum lebih cerah dan percaya diri.", harga: "Rp 500.000", durasi: "90 menit", kategori: "Estetik" },
-  { icon: "🔩", nama: "Kawat Gigi (Behel)", desc: "Behel metal dan ceramic untuk merapikan posisi gigi dan memperbaiki gigitan secara permanen.", harga: "Rp 4.000.000", durasi: "1–2 Tahun", kategori: "Ortodonti" },
-  { icon: "⚕️", nama: "Cabut Gigi", desc: "Pencabutan gigi dengan prosedur aman, cepat, dan minim rasa nyeri oleh dokter berpengalaman.", harga: "Rp 100.000", durasi: "30 menit", kategori: "Bedah" },
-  { icon: "👑", nama: "Pemasangan Crown", desc: "Mahkota gigi berbahan porselen atau zirconia untuk mengembalikan fungsi dan estetika gigi.", harga: "Rp 1.500.000", durasi: "2x kunjungan", kategori: "Estetik" },
-  { icon: "🔬", nama: "Odontektomi", desc: "Operasi pencabutan gigi bungsu yang tumbuh miring, dilakukan oleh dokter bedah mulut.", harga: "Rp 800.000", durasi: "60 menit", kategori: "Bedah" },
+  { icon: "🦷", img: "https://loremflickr.com/400/300/dentist,checkup?lock=11", nama: "Konsultasi Gigi", desc: "Pemeriksaan menyeluruh dan konsultasi dengan dokter spesialis untuk mengetahui kondisi gigi Anda.", harga: "Rp 75.000", durasi: "30 menit", kategori: "Umum" },
+  { icon: "✨", img: "https://loremflickr.com/400/300/dental,cleaning?lock=12", nama: "Scaling / Pembersihan", desc: "Membersihkan karang gigi secara profesional untuk gigi sehat, nafas segar, dan gusi kuat.", harga: "Rp 150.000", durasi: "45 menit", kategori: "Umum" },
+  { icon: "🔧", img: "https://loremflickr.com/400/300/dental,teeth?lock=13", nama: "Tambal Gigi Komposit", desc: "Penambalan gigi berlubang dengan material komposit berwarna alami, tahan lama dan estetis.", harga: "Rp 200.000", durasi: "60 menit", kategori: "Konservasi" },
+  { icon: "😁", img: "https://loremflickr.com/400/300/teeth,whitening?lock=14", nama: "Pemutihan Gigi", desc: "Whitening profesional menggunakan teknologi terkini untuk senyum lebih cerah dan percaya diri.", harga: "Rp 500.000", durasi: "90 menit", kategori: "Estetik" },
+  { icon: "🔩", img: "https://loremflickr.com/400/300/braces,teeth?lock=15", nama: "Kawat Gigi (Behel)", desc: "Behel metal dan ceramic untuk merapikan posisi gigi dan memperbaiki gigitan secara permanen.", harga: "Rp 4.000.000", durasi: "1–2 Tahun", kategori: "Ortodonti" },
+  { icon: "⚕️", img: "https://loremflickr.com/400/300/dentist,tooth?lock=16", nama: "Cabut Gigi", desc: "Pencabutan gigi dengan prosedur aman, cepat, dan minim rasa nyeri oleh dokter berpengalaman.", harga: "Rp 100.000", durasi: "30 menit", kategori: "Bedah" },
+  { icon: "👑", img: "https://loremflickr.com/400/300/dental,crown?lock=17", nama: "Pemasangan Crown", desc: "Mahkota gigi berbahan porselen atau zirconia untuk mengembalikan fungsi dan estetika gigi.", harga: "Rp 1.500.000", durasi: "2x kunjungan", kategori: "Estetik" },
+  { icon: "🔬", img: "https://loremflickr.com/400/300/dental,surgery?lock=18", nama: "Odontektomi", desc: "Operasi pencabutan gigi bungsu yang tumbuh miring, dilakukan oleh dokter bedah mulut.", harga: "Rp 800.000", durasi: "60 menit", kategori: "Bedah" },
 ];
 
 const DOCTORS = [
@@ -77,21 +77,31 @@ export default function LayananDokter() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 pb-12">
               {filteredLayanan.map((s) => (
-                <div key={s.nama} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition">
-                  <div className="flex items-start justify-between mb-3">
-                    <span className="text-3xl">{s.icon}</span>
-                    <span className="text-xs font-semibold bg-red-50 text-[#f06b6b] px-2 py-0.5 rounded-full">{s.kategori}</span>
+                <div key={s.nama} className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition overflow-hidden">
+                  {/* Gambar */}
+                  <div className="relative h-40 w-full bg-gray-100">
+                    <img
+                      src={s.img}
+                      alt={s.nama}
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
+                    <span className="absolute top-3 right-3 text-xs font-semibold bg-white/90 text-[#f06b6b] px-2 py-0.5 rounded-full shadow-sm">{s.kategori}</span>
+                    <span className="absolute bottom-2 left-3 text-2xl drop-shadow">{s.icon}</span>
                   </div>
-                  <h3 className="font-bold text-gray-800 mb-1">{s.nama}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed mb-4">{s.desc}</p>
-                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                    <div>
-                      <p className="text-xs text-gray-400">Mulai dari</p>
-                      <p className="font-bold text-sm" style={{ color: "#f06b6b" }}>{s.harga}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-gray-400">Durasi</p>
-                      <p className="text-xs font-semibold text-gray-600">{s.durasi}</p>
+                  {/* Konten */}
+                  <div className="p-5">
+                    <h3 className="font-bold text-gray-800 mb-1">{s.nama}</h3>
+                    <p className="text-sm text-gray-500 leading-relaxed mb-4">{s.desc}</p>
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                      <div>
+                        <p className="text-xs text-gray-400">Mulai dari</p>
+                        <p className="font-bold text-sm" style={{ color: "#f06b6b" }}>{s.harga}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-gray-400">Durasi</p>
+                        <p className="text-xs font-semibold text-gray-600">{s.durasi}</p>
+                      </div>
                     </div>
                   </div>
                 </div>

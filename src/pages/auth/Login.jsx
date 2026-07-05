@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FaUser, FaLock, FaEye, FaEyeSlash, FaFacebook, FaGoogle, FaTwitter } from "react-icons/fa";
-import { authAPI } from "../../services/notesAPI";
+import { authServiceSimple } from "../../services/authServiceSimple";
 
 function InputRow({ icon, type, name, value, onChange, placeholder, rightEl }) {
   return (
@@ -37,23 +37,33 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    
     try {
-      const result = await authAPI.login(dataForm.email, dataForm.password);
-      if (result.length > 0) {
-        const user = result[0];
-        localStorage.setItem("user", JSON.stringify(user));
-        if (user.role === "admin") {
-          navigate("/admin");
-        } else if (user.role === "member") {
-          navigate("/member");
-        } else {
-          navigate("/guest");
-        }
-      } else {
+      const user = await authServiceSimple.login(
+        dataForm.email,
+        dataForm.password
+      );
+
+      if (!user) {
         setError("Email atau password salah");
+        return;
+      }
+
+      // Simpan user ke localStorage
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // Redirect berdasarkan role
+      const userRole = user.role || 'member';
+      if (userRole === "admin") {
+        navigate("/admin");
+      } else if (userRole === "member") {
+        navigate("/member");
+      } else {
+        navigate("/guest");
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Login gagal");
+      console.error("Login error:", err);
+      setError(err.message || "Login gagal. Periksa email dan password Anda.");
     } finally {
       setLoading(false);
     }

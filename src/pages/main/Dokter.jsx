@@ -12,6 +12,7 @@ import Avatar from "../../components/Avatar";
 import SelectField from "../../components/SelectField";
 import Alert from "../../components/Alert";
 import Table from "../../components/Table";
+import { dokterService } from "../../services/supabaseService";
 
 const STATUS_BADGE = {
   Aktif: "success",
@@ -28,7 +29,7 @@ const EMPTY_FORM = {
 };
 
 export default function Dokter() {
-  const { doctors, setDoctors } = useClinic();
+  const { doctors, refreshDoctors } = useClinic();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [showForm, setShowForm] = useState(false);
@@ -50,19 +51,22 @@ export default function Dokter() {
     });
   }, [doctors, searchTerm, filterStatus]);
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    if (isEdit) {
-      setDoctors(doctors.map((d) => (d.id === form.id ? { ...form } : d)));
-      setSuccessAlert(`Data dokter ${form.nama} berhasil diperbarui.`);
-    } else {
-      setDoctors([
-        { ...form, id: `DK-${String(doctors.length + 1).padStart(3, "0")}`, riwayatPasien: [] },
-        ...doctors,
-      ]);
-      setSuccessAlert(`Dokter baru ${form.nama} berhasil ditambahkan.`);
+    try {
+      if (isEdit) {
+        await dokterService.update(form.uuid, form);
+        setSuccessAlert(`Data dokter ${form.nama} berhasil diperbarui.`);
+      } else {
+        await dokterService.create(form);
+        setSuccessAlert(`Dokter baru ${form.nama} berhasil ditambahkan.`);
+      }
+      await refreshDoctors();
+      closeForm();
+    } catch (err) {
+      console.error("Gagal simpan dokter:", err);
+      alert("Gagal menyimpan data dokter. Cek koneksi database.");
     }
-    closeForm();
     setTimeout(() => setSuccessAlert(""), 4000);
   };
 

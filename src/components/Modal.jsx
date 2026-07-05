@@ -4,16 +4,16 @@ export default function Modal({ isOpen, onClose, title, children }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
+      {/* Backdrop blur */}
       <div
-        className="absolute inset-0 bg-black bg-opacity-40"
+        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
         onClick={onClose}
       />
 
       {/* Box */}
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 z-10">
+      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 z-10 max-h-[90vh] flex flex-col">
         {/* Header coral — sesuai Figma */}
-        <div className="bg-[#f06b6b] px-6 py-4 rounded-t-2xl flex items-center justify-between">
+        <div className="bg-[#f06b6b] px-6 py-4 rounded-t-2xl flex items-center justify-between flex-shrink-0">
           <h3 className="text-base font-bold text-white">{title}</h3>
           <button
             onClick={onClose}
@@ -23,8 +23,8 @@ export default function Modal({ isOpen, onClose, title, children }) {
           </button>
         </div>
 
-        {/* Body */}
-        <div className="px-6 py-5">{children}</div>
+        {/* Body — scrollable */}
+        <div className="px-6 py-5 overflow-y-auto">{children}</div>
       </div>
     </div>
   );

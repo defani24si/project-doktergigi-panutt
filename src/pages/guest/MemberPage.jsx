@@ -1,31 +1,48 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   FaTooth, FaHome, FaHistory, FaHeartbeat, FaGift,
   FaSignOutAlt, FaCrown, FaStar, FaCalendarAlt,
   FaCheckCircle, FaHourglass, FaTag, FaCopy,
-  FaBars, FaTimes, FaBell, FaSearch, FaCommentDots,
+  FaBars, FaTimes, FaBell, FaSearch, FaCommentDots, FaUserMd,
 } from "react-icons/fa";
 import { MdSpaceDashboard } from "react-icons/md";
+import { feedbackService, diskonService, dokterService, janjiTemuService } from "../../services/supabaseService";
 
-const MEMBER = {
-  nama: "Budi Pasien", email: "budi@email.com", noHp: "081234567890",
+const MEMBER_DEFAULT = {
+  nama: "Member", email: "member@email.com", noHp: "081234567890",
   levelMembership: "Gold", poin: 300, bergabung: "2024-01-15",
   avatar: "https://avatar.iran.liara.run/public/13",
 };
 
+// Ambil data user yang login dari localStorage
+function getLoggedInMember() {
+  try {
+    const stored = localStorage.getItem("user");
+    if (!stored) return MEMBER_DEFAULT;
+    const user = JSON.parse(stored);
+    return {
+      ...MEMBER_DEFAULT,
+      nama: user.full_name || MEMBER_DEFAULT.nama,
+      email: user.email || MEMBER_DEFAULT.email,
+      noHp: user.phone || MEMBER_DEFAULT.noHp,
+    };
+  } catch {
+    return MEMBER_DEFAULT;
+  }
+}
+
 const TRANSAKSI = [
-  { id: "TRX-001", tanggal: "2026-06-10", layanan: "Scaling Gigi", dokter: "drg. Fikri (Umum)", biaya: 150000, status: "Selesai" },
-  { id: "TRX-002", tanggal: "2026-06-20", layanan: "Kawat Gigi", dokter: "drg. Budi (Ortodonti)", biaya: 4000000, status: "Proses" },
-  { id: "TRX-003", tanggal: "2026-06-22", layanan: "Tambal Komposit", dokter: "drg. Andi (Konservasi)", biaya: 200000, status: "Menunggu" },
-  { id: "TRX-004", tanggal: "2026-05-20", layanan: "Konsultasi Gigi", dokter: "drg. Fikri (Umum)", biaya: 75000, status: "Selesai" },
-  { id: "TRX-005", tanggal: "2026-03-18", layanan: "Pemutihan Gigi", dokter: "drg. Siti (Bedah Mulut)", biaya: 500000, status: "Selesai" },
+  { id: "TRX-001", invoice: "INV-2025-001", tanggal: "20 Jan 2025", layanan: "Scaling Gigi", dokter: "drg. Fikri (Umum)", metode: "Transfer Bank", biaya: 250000, status: "Lunas" },
+  { id: "TRX-002", invoice: "INV-2024-128", tanggal: "15 Des 2024", layanan: "Tambal Gigi", dokter: "drg. Andi (Konservasi)", metode: "Cash", biaya: 350000, status: "Lunas" },
+  { id: "TRX-003", invoice: "INV-2024-115", tanggal: "10 Nov 2024", layanan: "Konsultasi", dokter: "drg. Fikri (Umum)", metode: "QRIS", biaya: 150000, status: "Lunas" },
+  { id: "TRX-004", invoice: "INV-2025-002", tanggal: "25 Jan 2025", layanan: "Whitening", dokter: "drg. Siti (Bedah Mulut)", metode: "Transfer Bank", biaya: 750000, status: "Pending" },
 ];
 
 const RIWAYAT_KESEHATAN = [
-  { tanggal: "2026-06-10", tindakan: "Scaling Gigi", dokter: "drg. Fikri", catatan: "Karang gigi sudah dibersihkan. Kontrol 6 bulan lagi.", kondisi: "Baik" },
-  { tanggal: "2026-05-20", tindakan: "Tambal Komposit", dokter: "drg. Andi", catatan: "Gigi geraham kiri bawah ditambal. Hindari makanan keras 24 jam.", kondisi: "Perlu Perhatian" },
-  { tanggal: "2026-04-05", tindakan: "Konsultasi", dokter: "drg. Fikri", catatan: "Kondisi gigi baik. Disarankan scaling rutin setiap 6 bulan.", kondisi: "Baik" },
+  { tanggal: "20 Januari 2025", tindakan: "Scaling & Pembersihan Karang Gigi", dokter: "Dr. Sarah Putri", diagnosis: "Plak dan karang gigi ringan", resep: "Mouthwash antiseptik, Sikat gigi khusus", biaya: 250000, status: "Selesai" },
+  { tanggal: "15 Desember 2024", tindakan: "Tambal Gigi", dokter: "Dr. Ahmad Fauzi", diagnosis: "Karies gigi molar kanan atas", resep: "Paracetamol 500mg, Hindari makanan keras", biaya: 350000, status: "Selesai" },
+  { tanggal: "10 November 2024", tindakan: "Konsultasi Pemasangan Behel", dokter: "Dr. Lisa Amelia", diagnosis: "Maloklusi ringan", resep: "X-Ray panoramik (terlampir)", biaya: 150000, status: "Selesai" },
 ];
 
 const PROMOS = [
@@ -50,7 +67,9 @@ const MC_COLOR = {
 
 const STATUS_BADGE = {
   Selesai: "bg-green-50 text-green-600 border border-green-200",
+  Lunas: "bg-green-50 text-green-600 border border-green-200",
   Proses: "bg-blue-50 text-blue-600 border border-blue-200",
+  Pending: "bg-yellow-50 text-yellow-600 border border-yellow-200",
   Menunggu: "bg-yellow-50 text-yellow-600 border border-yellow-200",
 };
 
@@ -59,6 +78,8 @@ const TABS = [
   { id: "transaksi", label: "Riwayat Transaksi", icon: <FaHistory className="text-xl" /> },
   { id: "kesehatan", label: "Riwayat Kesehatan", icon: <FaHeartbeat className="text-xl" /> },
   { id: "loyalty", label: "Loyalty & Promo", icon: <FaGift className="text-xl" /> },
+  { id: "booking", label: "Booking Janji", icon: <FaCalendarAlt className="text-xl" /> },
+  { id: "feedback", label: "Feedback & Rating", icon: <FaStar className="text-xl" /> },
 ];
 
 export default function MemberPage() {
@@ -69,10 +90,105 @@ export default function MemberPage() {
   const [time] = useState(new Date());
   const navigate = useNavigate();
 
+  // Data member dari user yang login
+  const [MEMBER] = useState(getLoggedInMember());
+
+  // State form feedback
+  const [fbRating, setFbRating] = useState(5);
+  const [fbLayanan, setFbLayanan] = useState("");
+  const [fbKomentar, setFbKomentar] = useState("");
+  const [fbAlert, setFbAlert] = useState("");
+  const [fbSaving, setFbSaving] = useState(false);
+
+  // Promo aktif dari database (dibuat admin)
+  const [promoList, setPromoList] = useState([]);
+
+  useEffect(() => {
+    diskonService
+      .getAll()
+      .then((data) => setPromoList(data.filter((p) => p.status === "Aktif")))
+      .catch((err) => console.error("Gagal load promo:", err));
+  }, []);
+
+  // State booking janji temu
+  const [doctorList, setDoctorList] = useState([]);
+  const LAYANAN_LIST = ["Konsultasi", "Scaling Gigi", "Tambal Komposit", "Cabut Gigi", "Odontektomi", "Kawat Gigi"];
+  const TIME_SLOTS = Array.from({ length: 9 }, (_, i) => `${String(i + 8).padStart(2, "0")}:00`);
+  const [bookForm, setBookForm] = useState({
+    dokterNama: "",
+    tanggal: new Date().toISOString().split("T")[0],
+    jam: "",
+    layanan: "",
+    keluhan: "",
+  });
+  const [bookAlert, setBookAlert] = useState("");
+  const [bookSaving, setBookSaving] = useState(false);
+
+  useEffect(() => {
+    dokterService
+      .getAll()
+      .then((data) => setDoctorList(data.filter((d) => d.status === "Aktif")))
+      .catch((err) => console.error("Gagal load dokter:", err));
+  }, []);
+
+  const handleBooking = async (e) => {
+    e.preventDefault();
+    setBookSaving(true);
+    try {
+      await janjiTemuService.create({
+        pasienNama: MEMBER.nama,
+        dokterNama: bookForm.dokterNama,
+        tanggal: bookForm.tanggal,
+        jam: bookForm.jam,
+        layanan: bookForm.layanan,
+        keluhan: bookForm.keluhan,
+        status: "Menunggu",
+      });
+      setBookAlert("Janji temu berhasil dibuat! Status: Menunggu konfirmasi.");
+      setBookForm({
+        dokterNama: "",
+        tanggal: new Date().toISOString().split("T")[0],
+        jam: "",
+        layanan: "",
+        keluhan: "",
+      });
+    } catch (err) {
+      console.error("Gagal booking:", err);
+      setBookAlert("Gagal membuat janji temu. Coba lagi.");
+    } finally {
+      setBookSaving(false);
+    }
+    setTimeout(() => setBookAlert(""), 4000);
+  };
+
+  const handleSubmitFeedback = async (e) => {
+    e.preventDefault();
+    setFbSaving(true);
+    try {
+      await feedbackService.create({
+        nama: MEMBER.nama,
+        email: MEMBER.email,
+        rating: fbRating,
+        layanan: fbLayanan,
+        komentar: fbKomentar,
+      });
+      setFbAlert("Terima kasih! Feedback Anda berhasil dikirim.");
+      setFbRating(5);
+      setFbLayanan("");
+      setFbKomentar("");
+    } catch (err) {
+      console.error("Gagal kirim feedback:", err);
+      setFbAlert("Gagal mengirim feedback. Coba lagi.");
+    } finally {
+      setFbSaving(false);
+    }
+    setTimeout(() => setFbAlert(""), 4000);
+  };
+
   const mc = MC_COLOR[MEMBER.levelMembership] || MC_COLOR.Regular;
-  const totalBiaya = TRANSAKSI.filter(t => t.status === "Selesai").reduce((s, t) => s + t.biaya, 0);
-  const transaksiProses = TRANSAKSI.filter(t => t.status === "Proses" || t.status === "Menunggu");
-  const transaksiSelesai = TRANSAKSI.filter(t => t.status === "Selesai");
+  const totalBiaya = TRANSAKSI.filter(t => t.status === "Lunas").reduce((s, t) => s + t.biaya, 0);
+  const transaksiProses = TRANSAKSI.filter(t => t.status === "Pending");
+  const transaksiSelesai = TRANSAKSI.filter(t => t.status === "Lunas");
 
   const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
   const dayName = days[time.getDay()];
@@ -339,8 +455,8 @@ export default function MemberPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
                   { label: "Total Transaksi", value: `${TRANSAKSI.length}x`, cls: "bg-blue-50 text-blue-600" },
-                  { label: "Selesai", value: `${transaksiSelesai.length}x`, cls: "bg-green-50 text-green-600" },
-                  { label: "Dalam Proses", value: `${transaksiProses.length}x`, cls: "bg-yellow-50 text-yellow-600" },
+                  { label: "Lunas", value: `${transaksiSelesai.length}x`, cls: "bg-green-50 text-green-600" },
+                  { label: "Pending", value: `${transaksiProses.length}x`, cls: "bg-yellow-50 text-yellow-600" },
                   { label: "Total Biaya", value: `Rp ${totalBiaya.toLocaleString("id-ID")}`, cls: "bg-red-50 text-[#f06b6b]" },
                 ].map(s => (
                   <div key={s.label} className={`rounded-2xl p-4 ${s.cls.split(" ")[0]}`}>
@@ -349,66 +465,111 @@ export default function MemberPage() {
                   </div>
                 ))}
               </div>
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                <h3 className="font-bold text-gray-800 mb-4">Semua Riwayat Transaksi</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead><tr className="border-b-2 border-gray-100">
-                      {["ID Transaksi","Layanan","Dokter","Tanggal","Biaya","Status"].map(h => (
-                        <th key={h} className={`px-3 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide ${h==="Biaya"?"text-right":"text-left"} ${h==="Status"?"text-center":""}`}>{h}</th>
-                      ))}
-                    </tr></thead>
-                    <tbody>{TRANSAKSI.map((t,i) => (
-                      <tr key={t.id} className={`border-b border-gray-50 hover:bg-gray-50 transition ${i%2===0?"":"bg-gray-50/30"}`}>
-                        <td className="px-3 py-3.5 font-mono text-xs text-gray-500 font-semibold">{t.id}</td>
-                        <td className="px-3 py-3.5 font-semibold text-gray-800">{t.layanan}</td>
-                        <td className="px-3 py-3.5 text-gray-600 text-xs">{t.dokter}</td>
-                        <td className="px-3 py-3.5 text-gray-500 text-xs">{t.tanggal}</td>
-                        <td className="px-3 py-3.5 font-bold text-gray-800 text-right">Rp {t.biaya.toLocaleString("id-ID")}</td>
-                        <td className="px-3 py-3.5 text-center"><span className={`text-xs font-semibold px-3 py-1 rounded-full ${STATUS_BADGE[t.status]}`}>{t.status}</span></td>
-                      </tr>
-                    ))}</tbody>
-                    <tfoot><tr className="border-t-2 border-gray-200">
-                      <td colSpan={4} className="px-3 py-3 text-sm font-bold text-gray-700">Total Pengeluaran (Selesai)</td>
-                      <td className="px-3 py-3 text-right font-black text-sm" style={{ color: "#f06b6b" }}>Rp {totalBiaya.toLocaleString("id-ID")}</td>
-                      <td />
-                    </tr></tfoot>
-                  </table>
-                </div>
+
+              {/* Card transaksi */}
+              <div className="space-y-3">
+                {TRANSAKSI.map((t) => {
+                  const isLunas = t.status === "Lunas";
+                  return (
+                    <div key={t.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center justify-between gap-3">
+                      {/* Kiri: ikon + info */}
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                          style={{ backgroundColor: isLunas ? "#dcfce7" : "#fef9c3" }}
+                        >
+                          {isLunas
+                            ? <FaCheckCircle className="text-green-500" />
+                            : <FaHourglass className="text-yellow-500 text-sm" />}
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-800 text-sm">{t.layanan}</p>
+                          <p className="text-xs text-gray-500">{t.invoice} • {t.tanggal}</p>
+                          <p className="text-[11px] text-gray-400 mt-0.5">Metode: {t.metode}</p>
+                        </div>
+                      </div>
+
+                      {/* Kanan: harga + status + download */}
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <p className="font-black text-gray-800">Rp {t.biaya.toLocaleString("id-ID")}</p>
+                          <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full inline-block mt-1 ${
+                            isLunas ? "bg-green-50 text-green-600" : "bg-yellow-50 text-yellow-600"
+                          }`}>
+                            {t.status}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => alert(`Invoice ${t.invoice} akan diunduh (fitur demo).`)}
+                          className="w-9 h-9 rounded-xl flex items-center justify-center text-white transition hover:opacity-90 flex-shrink-0"
+                          style={{ backgroundColor: "#f06b6b" }}
+                          title="Download Invoice"
+                        >
+                          <FaHistory className="text-sm" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {/* ══ RIWAYAT KESEHATAN ══ */}
+          {/* ══ RIWAYAT KESEHATAN (RIWAYAT MEDIS) ══ */}
           {activeTab === "kesehatan" && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-              <h3 className="font-bold text-gray-800 mb-5">Riwayat Perawatan Gigi</h3>
-              <div className="relative">
-                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-100" />
-                <div className="space-y-6">
-                  {RIWAYAT_KESEHATAN.map((r, i) => (
-                    <div key={i} className="flex gap-4">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center z-10 shadow-sm"
-                        style={{ backgroundColor: r.kondisi === "Baik" ? "#dcfce7" : "#fef9c3" }}>
-                        {r.kondisi === "Baik" ? <FaCheckCircle className="text-green-500 text-sm" /> : <FaHourglass className="text-yellow-500 text-sm" />}
+            <div className="space-y-5">
+              {RIWAYAT_KESEHATAN.map((r, i) => (
+                <div key={i} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                  {/* Header card */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#f06b6b" }}>
+                        <FaTooth className="text-white text-lg" />
                       </div>
-                      <div className="flex-1 bg-gray-50 rounded-2xl p-4">
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <p className="font-bold text-gray-800 text-sm">{r.tindakan}</p>
-                            <p className="text-xs text-gray-500">{r.dokter}</p>
-                          </div>
-                          <div className="text-right ml-2">
-                            <p className="text-xs text-gray-400">{r.tanggal}</p>
-                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full mt-1 inline-block ${r.kondisi==="Baik"?"bg-green-50 text-green-600":"bg-yellow-50 text-yellow-600"}`}>{r.kondisi}</span>
-                          </div>
+                      <div>
+                        <h3 className="font-bold text-gray-800">{r.tindakan}</h3>
+                        <div className="flex items-center flex-wrap gap-3 text-xs text-gray-500 mt-1">
+                          <span className="flex items-center gap-1"><FaCalendarAlt className="text-gray-400" /> {r.tanggal}</span>
+                          <span className="flex items-center gap-1"><FaUserMd className="text-gray-400" /> {r.dokter}</span>
                         </div>
-                        <p className="text-sm text-gray-600 leading-relaxed">{r.catatan}</p>
                       </div>
                     </div>
-                  ))}
+                    <div className="text-right flex-shrink-0">
+                      <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-green-50 text-green-600">{r.status}</span>
+                      <p className="font-black text-gray-800 mt-1" style={{ color: "#f06b6b" }}>Rp {r.biaya.toLocaleString("id-ID")}</p>
+                    </div>
+                  </div>
+
+                  {/* Detail */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 bg-gray-50 rounded-xl px-4 py-3">
+                    <div>
+                      <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-0.5">Diagnosis</p>
+                      <p className="text-sm text-gray-700">{r.diagnosis}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-0.5">Resep & Catatan</p>
+                      <p className="text-sm text-gray-700">{r.resep}</p>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-3 mt-4">
+                    <button
+                      onClick={() => alert("Invoice akan diunduh (fitur demo).")}
+                      className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-xl transition hover:opacity-90"
+                      style={{ backgroundColor: "#f06b6b" }}
+                    >
+                      <FaHistory className="text-xs" /> Download Invoice
+                    </button>
+                    <button
+                      onClick={() => alert(`Detail perawatan: ${r.tindakan}\nDokter: ${r.dokter}\nDiagnosis: ${r.diagnosis}\nResep: ${r.resep}`)}
+                      className="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition"
+                    >
+                      Lihat Detail
+                    </button>
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
           )}
 
@@ -460,28 +621,205 @@ export default function MemberPage() {
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
                 <h3 className="font-bold text-gray-800 mb-4">Kode Promo Tersedia</h3>
                 <div className="space-y-3">
-                  {PROMOS.filter(p => p.minPoin <= MEMBER.poin).map(p => (
-                    <div key={p.kode} className="flex items-center justify-between border border-dashed border-red-200 rounded-2xl p-4 bg-red-50/50">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: "#f06b6b" }}>
-                          <FaTag className="text-white" />
+                  {promoList.length === 0 ? (
+                    <p className="text-sm text-gray-400 text-center py-4">Belum ada promo aktif saat ini.</p>
+                  ) : (
+                    promoList.map(p => (
+                      <div key={p.id} className="flex items-center justify-between border border-dashed border-red-200 rounded-2xl p-4 bg-red-50/50">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: "#f06b6b" }}>
+                            <FaTag className="text-white" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-gray-800 text-sm">{p.nama}</p>
+                            <p className="text-xs text-gray-500">
+                              Berlaku hingga {p.berlakuHingga || "-"}
+                              {p.minBeli > 0 && ` • Min. Rp ${Number(p.minBeli).toLocaleString("id-ID")}`}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-bold text-gray-800 text-sm">{p.nama}</p>
-                          <p className="text-xs text-gray-500">Berlaku hingga {p.berlaku}</p>
+                        <div className="text-right ml-3">
+                          <p className="font-black text-xl" style={{ color: "#f06b6b" }}>{p.diskon}%</p>
+                          <button onClick={() => handleCopy(p.kode)}
+                            className="flex items-center gap-1 text-xs text-gray-500 hover:text-[#f06b6b] transition mt-1">
+                            <FaCopy className="text-xs" />
+                            <span className="font-mono font-bold">{copiedKode === p.kode ? "✓ Tersalin!" : p.kode}</span>
+                          </button>
                         </div>
                       </div>
-                      <div className="text-right ml-3">
-                        <p className="font-black text-xl" style={{ color: "#f06b6b" }}>{p.diskon}%</p>
-                        <button onClick={() => handleCopy(p.kode)}
-                          className="flex items-center gap-1 text-xs text-gray-500 hover:text-[#f06b6b] transition mt-1">
-                          <FaCopy className="text-xs" />
-                          <span className="font-mono font-bold">{copiedKode === p.kode ? "✓ Tersalin!" : p.kode}</span>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* ══ BOOKING JANJI TEMU ══ */}
+          {activeTab === "booking" && (
+            <div className="space-y-6 max-w-2xl mx-auto">
+              {bookAlert && (
+                <div className="bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl px-4 py-3">
+                  {bookAlert}
+                </div>
+              )}
+
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h3 className="font-bold text-gray-800 text-lg mb-1">Booking Janji Temu</h3>
+                <p className="text-sm text-gray-400 mb-5">Buat janji temu dengan dokter pilihan Anda</p>
+
+                <form onSubmit={handleBooking} className="space-y-4">
+                  {/* Dokter */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Pilih Dokter</label>
+                    <select
+                      required
+                      value={bookForm.dokterNama}
+                      onChange={(e) => setBookForm({ ...bookForm, dokterNama: e.target.value, jam: "" })}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f06b6b] bg-white"
+                    >
+                      <option value="">-- Pilih Dokter --</option>
+                      {doctorList.map((d) => (
+                        <option key={d.id} value={d.nama}>{d.nama} - {d.spesialis}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Tanggal */}
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 block mb-1">Tanggal Janji</label>
+                      <input
+                        required
+                        type="date"
+                        value={bookForm.tanggal}
+                        onChange={(e) => setBookForm({ ...bookForm, tanggal: e.target.value })}
+                        className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f06b6b]"
+                      />
+                    </div>
+                    {/* Jam */}
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 block mb-1">Jam</label>
+                      <select
+                        required
+                        value={bookForm.jam}
+                        onChange={(e) => setBookForm({ ...bookForm, jam: e.target.value })}
+                        className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f06b6b] bg-white"
+                      >
+                        <option value="">-- Pilih Jam --</option>
+                        {TIME_SLOTS.map((slot) => (
+                          <option key={slot} value={slot}>{slot}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Layanan */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Jenis Layanan</label>
+                    <select
+                      required
+                      value={bookForm.layanan}
+                      onChange={(e) => setBookForm({ ...bookForm, layanan: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f06b6b] bg-white"
+                    >
+                      <option value="">-- Pilih Layanan --</option>
+                      {LAYANAN_LIST.map((l) => (
+                        <option key={l} value={l}>{l}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Keluhan */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Keluhan</label>
+                    <textarea
+                      rows={3}
+                      value={bookForm.keluhan}
+                      onChange={(e) => setBookForm({ ...bookForm, keluhan: e.target.value })}
+                      placeholder="Deskripsikan keluhan Anda..."
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f06b6b] resize-none"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={bookSaving}
+                    className="w-full py-2.5 rounded-lg text-white text-sm font-semibold transition hover:opacity-90 disabled:opacity-60"
+                    style={{ backgroundColor: "#f06b6b" }}
+                  >
+                    {bookSaving ? "Memproses..." : "Booking Sekarang"}
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* ══ FEEDBACK & RATING ══ */}
+          {activeTab === "feedback" && (
+            <div className="space-y-6 max-w-2xl mx-auto">
+              {fbAlert && (
+                <div className="bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl px-4 py-3">
+                  {fbAlert}
+                </div>
+              )}
+
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h3 className="font-bold text-gray-800 text-lg mb-1">Beri Feedback & Rating</h3>
+                <p className="text-sm text-gray-400 mb-5">Bagikan pengalaman Anda di Panutt Dental Clinic</p>
+
+                <form onSubmit={handleSubmitFeedback} className="space-y-5">
+                  {/* Rating bintang */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-2">Rating Anda</label>
+                    <div className="flex items-center gap-2">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => setFbRating(i)}
+                          className="text-3xl transition focus:outline-none"
+                        >
+                          <FaStar className={i <= fbRating ? "text-yellow-400" : "text-gray-200"} />
+                        </button>
+                      ))}
+                      <span className="ml-2 text-sm text-gray-500">{fbRating} / 5</span>
+                    </div>
+                  </div>
+
+                  {/* Layanan */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Layanan yang Dinilai</label>
+                    <input
+                      type="text"
+                      value={fbLayanan}
+                      onChange={(e) => setFbLayanan(e.target.value)}
+                      placeholder="cth: Scaling Gigi, Konsultasi..."
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f06b6b]"
+                    />
+                  </div>
+
+                  {/* Komentar */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Komentar</label>
+                    <textarea
+                      required
+                      rows={4}
+                      value={fbKomentar}
+                      onChange={(e) => setFbKomentar(e.target.value)}
+                      placeholder="Tuliskan pengalaman atau masukan Anda..."
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f06b6b] resize-none"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={fbSaving}
+                    className="w-full py-2.5 rounded-lg text-white text-sm font-semibold transition hover:opacity-90 disabled:opacity-60"
+                    style={{ backgroundColor: "#f06b6b" }}
+                  >
+                    {fbSaving ? "Mengirim..." : "Kirim Feedback"}
+                  </button>
+                </form>
               </div>
             </div>
           )}

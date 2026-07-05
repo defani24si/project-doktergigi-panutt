@@ -9,12 +9,14 @@ import {
   FaQuestionCircle,
   FaTag,
   FaRobot,
-  FaGift,
+  FaStar,
 } from "react-icons/fa";
 import { MdSpaceDashboard } from "react-icons/md";
-import { NavLink } from "react-router-dom"
+import { NavLink, useNavigate } from "react-router-dom";
 
 export default function Sidebar() {
+  const navigate = useNavigate();
+  
   const menuClass = ({ isActive }) =>
     `flex cursor-pointer items-center rounded-xl px-4 py-3 space-x-3 font-medium transition-all ${
       isActive
@@ -23,7 +25,8 @@ export default function Sidebar() {
     }`;
 
   const handleLogout = () => {
-    alert("Logout berhasil!");
+    localStorage.removeItem("user");
+    navigate("/login");
   };
 
   return (
@@ -67,7 +70,7 @@ export default function Sidebar() {
       <nav className="flex-1">
         <ul className="space-y-1">
           <li>
-            <NavLink to="/" end className={menuClass}>
+            <NavLink to="/admin" end className={menuClass}>
               <MdSpaceDashboard className="text-xl flex-shrink-0" />
               <span>Dashboard</span>
             </NavLink>
@@ -94,6 +97,8 @@ export default function Sidebar() {
             </NavLink>
           </li>
 
+          
+
           {/* Section divider Marketing */}
           <li className="pt-3">
             <p className="px-4 text-xs font-semibold text-red-200 uppercase tracking-wider mb-1">
@@ -116,18 +121,12 @@ export default function Sidebar() {
           </li>
 
           <li>
-            <NavLink to="/klaim-reward" className={menuClass}>
-              <FaGift className="text-xl flex-shrink-0" />
-              <span>Klaim Reward</span>
+            <NavLink to="/feedback" className={menuClass}>
+              <FaStar className="text-xl flex-shrink-0" />
+              <span>Feedback & Rating</span>
             </NavLink>
           </li>
 
-          <li>
-            <NavLink to="/CobaFiturXYZ" className={menuClass}>
-              <FaUserFriends className="text-xl flex-shrink-0" />
-              <span>Fitur XYZ</span>
-            </NavLink>
-          </li>
           {/* Section divider */}
           <li className="pt-3">
             <p className="px-4 text-xs font-semibold text-red-200 uppercase tracking-wider mb-1">

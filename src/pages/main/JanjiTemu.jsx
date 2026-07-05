@@ -13,6 +13,7 @@ import Alert from "../../components/Alert";
 import Table from "../../components/Table";
 import Checkbox from "../../components/Checkbox";
 import { DatePicker } from "../../components/ui/date-picker";
+import { janjiTemuService } from "../../services/supabaseService";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -26,13 +27,6 @@ import {
 } from "../../components/ui/alert-dialog";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
-
-const DOKTER_LIST = [
-  "drg. Budi (Ortodonti)",
-  "drg. Siti (Bedah Mulut)",
-  "drg. Andi (Konservasi Gigi)",
-  "drg. Fikri (Umum)",
-];
 
 const LAYANAN_LIST = [
   "Konsultasi", "Scaling Gigi", "Tambal Komposit",
@@ -48,7 +42,7 @@ const STATUS_BADGE = {
 };
 
 export default function JanjiTemu() {
-  const { appointments, setAppointments, patients } = useClinic();
+  const { appointments, patients, doctors, refreshAppointments } = useClinic();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterTanggal, setFilterTanggal] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua");
@@ -83,9 +77,11 @@ export default function JanjiTemu() {
   const filteredAppointments = useMemo(() => {
     return appointments
       .filter((apt) => {
+        const pasienName = apt.pasien_nama || apt.pasienNama || '';
+        const dokterName = apt.dokter_nama || apt.dokterNama || '';
         const matchSearch =
-          apt.pasienNama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          apt.dokterNama.toLowerCase().includes(searchTerm.toLowerCase());
+          pasienName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          dokterName.toLowerCase().includes(searchTerm.toLowerCase());
         const matchStatus = filterStatus === "Semua" || apt.status === filterStatus;
         const matchDate = filterTanggal === "" || apt.tanggal === filterTanggal;
         return matchSearch && matchStatus && matchDate;
@@ -100,12 +96,10 @@ export default function JanjiTemu() {
     return TIME_SLOTS.map((slot) => ({ time: slot, isAvailable: !booked.includes(slot) }));
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     const pasien = patients.find((p) => p.id === form.pasienId);
     const newAppt = {
-      id: `JT-${String(appointments.length + 1).padStart(3, "0")}`,
-      pasienId: form.pasienId,
       pasienNama: pasien ? pasien.nama : "Unknown",
       dokterNama: form.dokterNama,
       tanggal: form.tanggal,
@@ -114,16 +108,54 @@ export default function JanjiTemu() {
       keluhan: form.keluhan,
       status: "Menunggu",
     };
-    setAppointments([...appointments, newAppt]);
-    setSuccessAlert(`Janji temu untuk ${newAppt.pasienNama} berhasil dibuat.`);
-    setShowForm(false);
-    setReminderChecked(false);
-    setForm({ pasienId: "", dokterNama: "", tanggal: new Date().toISOString().split("T")[0], jam: "", layanan: "", keluhan: "" });
+    try {
+      await janjiTemuService.create(newAppt);
+      await refreshAppointments();
+      setSuccessAlert(`Janji temu untuk ${newAppt.pasienNama} berhasil dibuat.`);
+
+      // Kirim pengingat via WhatsApp jika dicentang
+      if (reminderChecked && pasien?.noHp) {
+        kirimPengingatWA(pasien, newAppt);
+      } else if (reminderChecked && !pasien?.noHp) {
+        alert("Pengingat tidak dapat dikirim: nomor HP pasien belum terisi.");
+      }
+
+      setShowForm(false);
+      setReminderChecked(false);
+      setForm({ pasienId: "", dokterNama: "", tanggal: new Date().toISOString().split("T")[0], jam: "", layanan: "", keluhan: "" });
+    } catch (err) {
+      console.error("Gagal buat janji temu:", err);
+      alert("Gagal membuat janji temu. Cek koneksi database.");
+    }
     setTimeout(() => setSuccessAlert(""), 4000);
   };
 
-  const updateStatus = (id, newStatus) => {
-    setAppointments(appointments.map((apt) => (apt.id === id ? { ...apt, status: newStatus } : apt)));
+  // Buka WhatsApp dengan pesan pengingat yang sudah terisi
+  const kirimPengingatWA = (pasien, appt) => {
+    // Normalisasi nomor: 08xxx -> 628xxx
+    let nomor = (pasien.noHp || "").replace(/\D/g, "");
+    if (nomor.startsWith("0")) nomor = "62" + nomor.slice(1);
+
+    const pesan =
+      `Halo ${pasien.nama}, ini pengingat janji temu Anda di Panutt Dental Clinic:\n\n` +
+      `🦷 Layanan: ${appt.layanan}\n` +
+      `👨‍⚕️ Dokter: ${appt.dokterNama}\n` +
+      `📅 Tanggal: ${appt.tanggal}\n` +
+      `⏰ Jam: ${appt.jam}\n\n` +
+      `Mohon datang 10 menit lebih awal. Terima kasih.`;
+
+    const url = `https://wa.me/${nomor}?text=${encodeURIComponent(pesan)}`;
+    window.open(url, "_blank");
+  };
+
+  const updateStatus = async (uuid, newStatus) => {
+    try {
+      await janjiTemuService.updateStatus(uuid, newStatus);
+      await refreshAppointments();
+    } catch (err) {
+      console.error("Gagal update status:", err);
+      alert("Gagal mengubah status janji temu.");
+    }
   };
 
   const handleCancelConfirm = () => {
@@ -233,9 +265,9 @@ export default function JanjiTemu() {
           ) : (
             filteredAppointments.map((apt) => (
               <tr key={apt.id} className="hover:bg-gray-50 transition text-sm">
-                <td className="px-4 py-4 font-medium text-gray-600">{apt.id}</td>
-                <td className="px-4 py-4 font-semibold text-gray-800">{apt.pasienNama}</td>
-                <td className="px-4 py-4 text-gray-600">{apt.dokterNama}</td>
+                <td className="px-4 py-4 font-medium text-gray-600">{apt.janji_id || apt.id}</td>
+                <td className="px-4 py-4 font-semibold text-gray-800">{apt.pasien_nama || apt.pasienNama}</td>
+                <td className="px-4 py-4 text-gray-600">{apt.dokter_nama || apt.dokterNama}</td>
                 <td className="px-4 py-4 text-gray-600">
                   <span className="font-medium">{apt.tanggal}</span>
                   <p className="text-xs text-gray-400 flex items-center mt-1">
@@ -251,7 +283,7 @@ export default function JanjiTemu() {
                     <div className="flex items-center justify-center gap-2">
                       {/* Selesai langsung */}
                       <button
-                        onClick={() => updateStatus(apt.id, "Selesai")}
+                        onClick={() => updateStatus(apt.uuid, "Selesai")}
                         className="px-3 py-1.5 text-xs font-medium bg-green-50 text-green-600 border border-green-200 rounded-lg hover:bg-green-100 transition whitespace-nowrap"
                       >
                         ✓ Selesai
@@ -261,7 +293,7 @@ export default function JanjiTemu() {
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <button
-                            onClick={() => setCancelTargetId(apt.id)}
+                            onClick={() => setCancelTargetId(apt.uuid)}
                             className="px-3 py-1.5 text-xs font-medium bg-red-50 text-red-500 border border-red-200 rounded-lg hover:bg-red-100 transition whitespace-nowrap"
                           >
                             ✕ Batalkan
@@ -271,7 +303,7 @@ export default function JanjiTemu() {
                           <AlertDialogHeader>
                             <AlertDialogTitle>Batalkan Janji Temu?</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Janji temu <strong>{apt.pasienNama}</strong> dengan <strong>{apt.dokterNama}</strong> pada{" "}
+                              Janji temu <strong>{apt.pasien_nama || apt.pasienNama}</strong> dengan <strong>{apt.dokter_nama || apt.dokterNama}</strong> pada{" "}
                               <strong>{apt.tanggal} pukul {apt.jam}</strong> akan dibatalkan. Tindakan ini tidak dapat diurungkan.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
@@ -305,14 +337,22 @@ export default function JanjiTemu() {
               label="Pilih Pasien"
               value={form.pasienId}
               onChange={(e) => setForm({ ...form, pasienId: e.target.value })}
-              options={patients.map((p) => ({ value: p.id, label: `${p.id} - ${p.nama}` }))}
+              options={[
+                { value: "", label: "-- Pilih Pasien --" },
+                ...patients.map((p) => ({ value: p.id, label: `${p.id} - ${p.nama}` })),
+              ]}
               selectRef={pasienSelectRef}
             />
             <SelectField
               label="Pilih Dokter"
               value={form.dokterNama}
               onChange={(e) => setForm({ ...form, dokterNama: e.target.value, jam: "" })}
-              options={DOKTER_LIST.map((d) => ({ value: d, label: d }))}
+              options={[
+                { value: "", label: "-- Pilih Dokter --" },
+                ...doctors
+                  .filter((d) => d.status === "Aktif")
+                  .map((d) => ({ value: d.nama, label: `${d.nama} - ${d.spesialis}` })),
+              ]}
             />
           </div>
 

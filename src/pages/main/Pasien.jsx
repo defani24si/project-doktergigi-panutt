@@ -36,14 +36,18 @@ const EMPTY_FORM = {
   levelMembership: "Regular",
   referralCode: "",
   jenisPerwatan: "",
+  terakhirKunjungan: "",
+  totalBiaya: "",
   metodePembayaran: "",
   feedback: "",
   sumber: "",
   catatan: "",
 };
 
+import { pasienService } from "../../services/supabaseService";
+
 export default function Pasien() {
-  const { patients: pasienData, setPatients: setPasienData } = useClinic();
+  const { patients: pasienData, refreshPatients } = useClinic();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [filterMembership, setFilterMembership] = useState("Semua");
@@ -51,6 +55,7 @@ export default function Pasien() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [isEdit, setIsEdit] = useState(false);
   const [successAlert, setSuccessAlert] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const totalPasien = pasienData.length;
   const pasienAktif = pasienData.filter((p) => p.status === "Aktif").length;
@@ -77,33 +82,27 @@ export default function Pasien() {
   const formatRupiah = (num) =>
     new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(num);
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    if (isEdit) {
-      setPasienData(
-        pasienData.map((p) =>
-          p.id === form.id ? { ...form, umur: calculateAge(form.tanggalLahir) } : p
-        )
-      );
-      setSuccessAlert(`Data pasien ${form.nama} berhasil diperbarui.`);
-    } else {
-      setPasienData([
-        {
-          ...form,
-          id: `PT${String(pasienData.length + 1).padStart(4, "0")}`,
-          umur: calculateAge(form.tanggalLahir),
-          terakhirKunjungan: "-",
-          riwayatKunjungan: 0,
-          totalBiaya: 0,
-          riwayatMedis: [],
-          riwayatJanji: [],
-          riwayatPembayaran: [],
-        },
-        ...pasienData,
-      ]);
-      setSuccessAlert(`Pasien baru ${form.nama} berhasil ditambahkan.`);
+    setSaving(true);
+    try {
+      const payload = { ...form, umur: calculateAge(form.tanggalLahir) };
+      if (isEdit) {
+        await pasienService.update(form.uuid, payload);
+        setSuccessAlert(`Data pasien ${form.nama} berhasil diperbarui.`);
+      } else {
+        await pasienService.create(payload);
+        setSuccessAlert(`Pasien baru ${form.nama} berhasil ditambahkan.`);
+      }
+      await refreshPatients();
+      closeForm();
+    } catch (err) {
+      console.error("Gagal simpan pasien:", err);
+      setSuccessAlert("");
+      alert("Gagal menyimpan data pasien. Cek koneksi database.");
+    } finally {
+      setSaving(false);
     }
-    closeForm();
     setTimeout(() => setSuccessAlert(""), 4000);
   };
 
@@ -280,6 +279,23 @@ export default function Pasien() {
           <InputField label="Kota / Alamat" value={form.alamat}
             onChange={(e) => setForm({ ...form, alamat: e.target.value })} placeholder="Kota / Kabupaten" />
           <div className="grid grid-cols-2 gap-4">
+            <InputField label="Perawatan Terakhir" value={form.jenisPerwatan || ""}
+              onChange={(e) => setForm({ ...form, jenisPerwatan: e.target.value })} placeholder="cth: Tambal Gigi" />
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">Tanggal Kunjungan Terakhir</label>
+              <input type="date" value={form.terakhirKunjungan && form.terakhirKunjungan !== "-" ? form.terakhirKunjungan : ""}
+                onChange={(e) => setForm({ ...form, terakhirKunjungan: e.target.value })}
+                className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f06b6b]" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <InputField label="Total Biaya (Rp)" type="number" value={form.totalBiaya || ""}
+              onChange={(e) => setForm({ ...form, totalBiaya: e.target.value })} placeholder="0" />
+            <SelectField label="Metode Pembayaran" value={form.metodePembayaran || ""}
+              onChange={(e) => setForm({ ...form, metodePembayaran: e.target.value })}
+              options={[{ value: "", label: "-- Pilih --" }, { value: "Cash", label: "Cash" }, { value: "QRIS", label: "QRIS" }, { value: "E-wallet", label: "E-wallet" }, { value: "Debit", label: "Debit" }, { value: "Transfer Bank", label: "Transfer Bank" }]} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
             <SelectField label="Status Pasien" value={form.status}
               onChange={(e) => setForm({ ...form, status: e.target.value })}
               options={[{ value: "Aktif", label: "Aktif" }, { value: "Tidak Aktif", label: "Tidak Aktif" }]} />
@@ -294,8 +310,8 @@ export default function Pasien() {
               onChange={(e) => setForm({ ...form, sumber: e.target.value })}
               options={[{ value: "", label: "-- Pilih --" }, { value: "Instagram", label: "Instagram" }, { value: "TikTok", label: "TikTok" }, { value: "WhatsApp", label: "WhatsApp" }, { value: "Referral", label: "Referral" }, { value: "Website", label: "Website" }]} />
           </div>
-          <TextArea label="Catatan / Feedback" value={form.catatan || ""}
-            onChange={(e) => setForm({ ...form, catatan: e.target.value })}
+          <TextArea label="Catatan / Feedback" value={form.feedback || form.catatan || ""}
+            onChange={(e) => setForm({ ...form, feedback: e.target.value, catatan: e.target.value })}
             placeholder="Catatan atau feedback pasien..." rows={3} />
           <div className="flex justify-end gap-3 pt-2">
             <Button type="secondary" onClick={closeForm}>Batal</Button>

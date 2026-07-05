@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaTag, FaPlus, FaTrash, FaPercent, FaToggleOn, FaToggleOff, FaCalendarAlt, FaShoppingCart } from "react-icons/fa";
 import PageHeader from "../../components/PageHeader";
 import Card from "../../components/Card";
@@ -6,12 +6,9 @@ import Button from "../../components/Button";
 import Modal from "../../components/Modal";
 import InputField from "../../components/InputField";
 import Alert from "../../components/Alert";
+import { diskonService } from "../../services/supabaseService";
 
-const INITIAL_PROMOS = [
-  { id: 1, kode: "GIGI10", nama: "Diskon Scaling 10%", diskon: 10, minBeli: 150000, berlakuHingga: "2026-08-31", status: "Aktif" },
-  { id: 2, kode: "NEWMEMBER", nama: "Member Baru 20%", diskon: 20, minBeli: 0, berlakuHingga: "2026-07-31", status: "Aktif" },
-  { id: 3, kode: "LEBARAN25", nama: "Promo Lebaran 25%", diskon: 25, minBeli: 200000, berlakuHingga: "2026-04-10", status: "Tidak Aktif" },
-];
+const INITIAL_PROMOS = [];
 
 const EMPTY_FORM = { kode: "", nama: "", diskon: "", minBeli: "", berlakuHingga: "" };
 
@@ -29,28 +26,52 @@ export default function Diskon() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [successAlert, setSuccessAlert] = useState("");
 
-  const handleSave = (e) => {
+  // Load promo dari Supabase
+  useEffect(() => {
+    loadPromos();
+  }, []);
+
+  const loadPromos = async () => {
+    try {
+      const data = await diskonService.getAll();
+      setPromos(data);
+    } catch (err) {
+      console.error("Gagal load promo:", err);
+    }
+  };
+
+  const handleSave = async (e) => {
     e.preventDefault();
-    const newPromo = {
-      id: promos.length + 1,
-      ...form,
-      diskon: Number(form.diskon),
-      minBeli: Number(form.minBeli),
-      status: "Aktif",
-    };
-    setPromos([...promos, newPromo]);
-    setSuccessAlert(`Promo "${form.nama}" berhasil ditambahkan.`);
-    setShowForm(false);
-    setForm(EMPTY_FORM);
+    try {
+      await diskonService.create(form);
+      await loadPromos();
+      setSuccessAlert(`Promo "${form.nama}" berhasil ditambahkan.`);
+      setShowForm(false);
+      setForm(EMPTY_FORM);
+    } catch (err) {
+      console.error("Gagal simpan promo:", err);
+      alert("Gagal menyimpan promo. Cek koneksi database.");
+    }
     setTimeout(() => setSuccessAlert(""), 4000);
   };
 
-  const handleDelete = (id) => setPromos(promos.filter((p) => p.id !== id));
+  const handleDelete = async (id) => {
+    try {
+      await diskonService.delete(id);
+      await loadPromos();
+    } catch (err) {
+      console.error("Gagal hapus promo:", err);
+    }
+  };
 
-  const toggleStatus = (id) => {
-    setPromos(promos.map((p) =>
-      p.id === id ? { ...p, status: p.status === "Aktif" ? "Tidak Aktif" : "Aktif" } : p
-    ));
+  const toggleStatus = async (id, currentStatus) => {
+    try {
+      const newStatus = currentStatus === "Aktif" ? "Tidak Aktif" : "Aktif";
+      await diskonService.updateStatus(id, newStatus);
+      await loadPromos();
+    } catch (err) {
+      console.error("Gagal toggle status:", err);
+    }
   };
 
   const totalAktif = promos.filter((p) => p.status === "Aktif").length;
@@ -156,7 +177,7 @@ export default function Diskon() {
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                   <FaShoppingCart className="text-gray-400" />
                   Min. pembelian: <span className="font-medium text-gray-700">
-                    {p.minBeli > 0 ? `Rp ${p.minBeli.toLocaleString("id-ID")}` : "Tanpa minimum"}
+                    {p.minBeli > 0 ? `Rp ${Number(p.minBeli).toLocaleString("id-ID")}` : "Tanpa minimum"}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -168,7 +189,7 @@ export default function Diskon() {
               {/* Actions */}
               <div className="flex gap-2 pt-3 border-t border-gray-100">
                 <button
-                  onClick={() => toggleStatus(p.id)}
+                  onClick={() => toggleStatus(p.id, p.status)}
                   className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-xl transition ${
                     p.status === "Aktif"
                       ? "bg-yellow-50 text-yellow-600 hover:bg-yellow-100"
