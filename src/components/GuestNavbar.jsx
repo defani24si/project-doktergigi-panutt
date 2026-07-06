@@ -2,23 +2,24 @@ import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { FaTooth, FaBars, FaTimes } from "react-icons/fa";
 
-const MENU = [
+// Menu route (pakai NavLink)
+const MENU_ROUTES = [
   { to: "/guest", label: "Beranda", end: true },
   { to: "/guest/layanan", label: "Layanan & Dokter" },
   { to: "/guest/booking", label: "Buat Janji" },
-  { to: "/guest/cek-status", label: "Cek Status" },
+];
+
+// Menu anchor (pakai <a> biasa, hanya di landing page)
+const MENU_ANCHORS = [
+  { href: "#layanan", label: "Harga" },
+  { href: "#testimoni", label: "Testimoni" },
+  { href: "#kontak", label: "Kontak" },
 ];
 
 export default function GuestNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Pill style: aktif = putih + teks coral, tidak aktif = teks putih
-  const pillClass = ({ isActive }) =>
-    `px-4 py-2 rounded-full text-sm font-semibold transition ${
-      isActive
-        ? "bg-white text-[#f06b6b] shadow-sm"
-        : "text-white/90 hover:bg-white/15"
-    }`;
+  const staticClass = "px-4 py-2 rounded-full text-sm font-semibold transition text-white/90 hover:bg-white/15 hover:text-white";
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 shadow-md" style={{ backgroundColor: "#f06b6b" }}>
@@ -35,12 +36,17 @@ export default function GuestNavbar() {
           </div>
         </Link>
 
-        {/* Menu Desktop — pill bar */}
+        {/* Menu Desktop */}
         <div className="hidden md:flex items-center gap-1">
-          {MENU.map((m) => (
-            <NavLink key={m.to} to={m.to} end={m.end} className={pillClass}>
+          {MENU_ROUTES.map((m) => (
+            <NavLink key={m.to} to={m.to} end={m.end} className={staticClass}>
               {m.label}
             </NavLink>
+          ))}
+          {MENU_ANCHORS.map((m) => (
+            <a key={m.href} href={`/guest${m.href}`} className={staticClass}>
+              {m.label}
+            </a>
           ))}
         </div>
 
@@ -64,20 +70,19 @@ export default function GuestNavbar() {
       {/* Mobile Menu */}
       {menuOpen && (
         <div className="md:hidden border-t border-white/20 px-6 py-4 space-y-2" style={{ backgroundColor: "#f06b6b" }}>
-          {MENU.map((m) => (
-            <NavLink
-              key={m.to}
-              to={m.to}
-              end={m.end}
-              className={({ isActive }) =>
-                `block px-4 py-2 rounded-full text-sm font-semibold ${
-                  isActive ? "bg-white text-[#f06b6b]" : "text-white/90 hover:bg-white/15"
-                }`
-              }
-              onClick={() => setMenuOpen(false)}
-            >
+          {MENU_ROUTES.map((m) => (
+            <NavLink key={m.to} to={m.to} end={m.end}
+              className={staticClass}
+              onClick={() => setMenuOpen(false)}>
               {m.label}
             </NavLink>
+          ))}
+          {MENU_ANCHORS.map((m) => (
+            <a key={m.href} href={`/guest${m.href}`}
+              className={staticClass}
+              onClick={() => setMenuOpen(false)}>
+              {m.label}
+            </a>
           ))}
           <Link to="/login"
             className="block text-center px-4 py-2 rounded-full bg-white text-[#f06b6b] font-semibold text-sm"

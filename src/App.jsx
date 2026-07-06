@@ -36,7 +36,6 @@ const Forgot = React.lazy(() => import("./pages/auth/Forgot"));
 const LandingPage = React.lazy(() => import("./pages/guest/LandingPage"));
 const LayananDokter = React.lazy(() => import("./pages/guest/LayananDokter"));
 const BookingGuest = React.lazy(() => import("./pages/guest/BookingGuest"));
-const CekStatus = React.lazy(() => import("./pages/guest/CekStatus"));
 
 // Member pages (harus login sebagai member)
 const MemberPage        = React.lazy(() => import("./pages/guest/MemberPage"));
@@ -61,7 +60,6 @@ function App() {
             <Route path="/guest" element={<LandingPage />} />
             <Route path="/guest/layanan" element={<LayananDokter />} />
             <Route path="/guest/booking" element={<BookingGuest />} />
-            <Route path="/guest/cek-status" element={<CekStatus />} />
           </Route>
 
           {/* ── MEMBER (harus login) ── */}
