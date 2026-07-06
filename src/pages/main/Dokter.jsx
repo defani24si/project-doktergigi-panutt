@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { FaPlus, FaSearch, FaEdit, FaUserMd, FaStethoscope } from "react-icons/fa";
+import { FaPlus, FaSearch, FaEdit, FaTrash, FaUserMd, FaStethoscope } from "react-icons/fa";
 import { useClinic } from "../../context/useClinic";
 import Card from "../../components/Card";
 import Badge from "../../components/Badge";
@@ -72,6 +72,19 @@ export default function Dokter() {
 
   const openEdit = (d) => { setForm(d); setIsEdit(true); setShowForm(true); };
   const closeForm = () => { setForm(EMPTY_FORM); setIsEdit(false); setShowForm(false); };
+
+  const handleDelete = async (uuid, nama) => {
+    if (!window.confirm(`Hapus dokter "${nama}"? Tindakan ini tidak bisa dibatalkan.`)) return;
+    try {
+      await dokterService.delete(uuid);
+      await refreshDoctors();
+      setSuccessAlert(`Dokter "${nama}" berhasil dihapus.`);
+      setTimeout(() => setSuccessAlert(""), 4000);
+    } catch (err) {
+      console.error("Gagal hapus dokter:", err);
+      alert("Gagal menghapus dokter.");
+    }
+  };
 
   return (
     <div className="flex flex-col w-full pb-10">
@@ -172,9 +185,14 @@ export default function Dokter() {
                   <Badge type={STATUS_BADGE[d.status] || "secondary"}>{d.status}</Badge>
                 </td>
                 <td className="px-4 py-4 text-center">
-                  <button onClick={() => openEdit(d)} className="p-2 text-gray-400 hover:text-yellow-500 hover:bg-yellow-50 rounded-lg transition">
-                    <FaEdit className="text-lg" />
-                  </button>
+                  <div className="flex items-center justify-center gap-1">
+                    <button onClick={() => openEdit(d)} className="p-2 text-gray-400 hover:text-yellow-500 hover:bg-yellow-50 rounded-lg transition">
+                      <FaEdit className="text-lg" />
+                    </button>
+                    <button onClick={() => handleDelete(d.uuid, d.nama)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition">
+                      <FaTrash className="text-lg" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))

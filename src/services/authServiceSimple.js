@@ -21,8 +21,10 @@ export const authServiceSimple = {
         {
           full_name: fullName,
           email: email,
-          password: password, // ⚠️ Plain text, tidak aman untuk production!
+          password: password,
           role: role,
+          total_poin: 0,              // ← default poin 0
+          membership_tier: 'Bronze',  // ← default tier Bronze
         },
         { headers }
       );

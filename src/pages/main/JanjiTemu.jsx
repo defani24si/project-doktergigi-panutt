@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { FaPlus, FaSearch, FaCalendarDay } from "react-icons/fa";
+import { FaPlus, FaSearch, FaCalendarDay, FaUserPlus } from "react-icons/fa";
 import { useClinic } from "../../context/useClinic";
 import Card from "../../components/Card";
 import Badge from "../../components/Badge";
@@ -13,7 +13,7 @@ import Alert from "../../components/Alert";
 import Table from "../../components/Table";
 import Checkbox from "../../components/Checkbox";
 import { DatePicker } from "../../components/ui/date-picker";
-import { janjiTemuService } from "../../services/supabaseService";
+import { janjiTemuService, userService, pasienService, transaksiService } from "../../services/supabaseService";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -101,6 +101,7 @@ export default function JanjiTemu() {
     const pasien = patients.find((p) => p.id === form.pasienId);
     const newAppt = {
       pasienNama: pasien ? pasien.nama : "Unknown",
+      pasienEmail: pasien?.email || null,
       dokterNama: form.dokterNama,
       tanggal: form.tanggal,
       jam: form.jam,
@@ -150,7 +151,73 @@ export default function JanjiTemu() {
 
   const updateStatus = async (uuid, newStatus) => {
     try {
+      // 1. Ambil data janji temu yang akan diupdate
+      const appt = appointments.find((a) => a.uuid === uuid);
+
+      // 2. Update status
       await janjiTemuService.updateStatus(uuid, newStatus);
+
+      // 3. Kalau status jadi "Selesai"
+      if (newStatus === "Selesai" && appt) {
+        const pasienEmail = appt.pasienEmail || appt.pasien_email;
+        const pasienNama  = appt.pasienNama  || appt.pasien_nama || "Pasien";
+        const POIN_PER_KUNJUNGAN = 50;
+
+        // 3a. Auto-create transaksi di database
+        try {
+          // Ambil harga layanan dari daftar (atau default 0)
+          const HARGA_LAYANAN = {
+            "Konsultasi":     75000,
+            "Scaling Gigi":  150000,
+            "Tambal Komposit": 200000,
+            "Tambal Gigi":   200000,
+            "Cabut Gigi":    100000,
+            "Odontektomi":   800000,
+            "Kawat Gigi":   4000000,
+            "Pemutihan Gigi": 500000,
+          };
+          const biaya = HARGA_LAYANAN[appt.layanan] || 0;
+
+          await transaksiService.create({
+            pasienNama:        pasienNama,
+            pasienEmail:       pasienEmail || null,
+            layanan:           appt.layanan,
+            dokterNama:        appt.dokterNama || appt.dokter_nama || "",
+            tanggal:           appt.tanggal,
+            biaya:             biaya,
+            diskonPersen:      0,
+            diskonNominal:     0,
+            total:             biaya,
+            metodePembayaran:  null,
+            status:            "Pending", // Admin bisa update ke Lunas setelah bayar
+          });
+          console.log(`✅ Transaksi otomatis dibuat untuk ${pasienNama} - ${appt.layanan}`);
+        } catch (trxErr) {
+          console.warn("Gagal buat transaksi otomatis:", trxErr.message);
+        }
+
+        // 3b. Tambah poin ke member
+        if (pasienEmail) {
+          try {
+            const result = await userService.tambahPoin(pasienEmail, POIN_PER_KUNJUNGAN);
+            console.log(`✅ Poin +${POIN_PER_KUNJUNGAN} untuk ${pasienEmail}. Total: ${result.poinBaru} (${result.tierBaru})`);
+          } catch (poinErr) {
+            console.warn("Gagal tambah poin (user mungkin belum terdaftar):", poinErr.message);
+          }
+        } else {
+          try {
+            if (pasienNama) {
+              const result = await userService.tambahPoinByNama(pasienNama, POIN_PER_KUNJUNGAN);
+              if (result) {
+                console.log(`✅ Poin +${POIN_PER_KUNJUNGAN} untuk ${pasienNama}. Total: ${result.poinBaru} (${result.tierBaru})`);
+              }
+            }
+          } catch (poinErr) {
+            console.warn("Gagal tambah poin by nama:", poinErr.message);
+          }
+        }
+      }
+
       await refreshAppointments();
     } catch (err) {
       console.error("Gagal update status:", err);
@@ -162,6 +229,37 @@ export default function JanjiTemu() {
     if (cancelTargetId) {
       updateStatus(cancelTargetId, "Dibatalkan");
       setCancelTargetId(null);
+    }
+  };
+
+  // Otomatis tambah ke tabel pasien jika belum ada
+  const tambahKePasien = async (apt) => {
+    const namaPasien = apt.pasienNama || apt.pasien_nama;
+    if (!namaPasien || namaPasien === "Unknown") {
+      alert("Nama pasien tidak valid.");
+      return;
+    }
+    try {
+      const semuaPasien = await pasienService.getAll();
+      const sudahAda = semuaPasien.find(
+        (p) => p.nama?.toLowerCase() === namaPasien.toLowerCase()
+      );
+      if (sudahAda) {
+        alert(`Pasien "${namaPasien}" sudah terdaftar (ID: ${sudahAda.id})`);
+        return;
+      }
+      await pasienService.create({
+        nama: namaPasien,
+        status: "Aktif",
+        levelMembership: "Regular",
+        jenisPerwatan: apt.layanan || "",
+        sumber: "Janji Temu",
+      });
+      setSuccessAlert(`Pasien "${namaPasien}" berhasil ditambahkan ke daftar pasien!`);
+      setTimeout(() => setSuccessAlert(""), 4000);
+    } catch (err) {
+      console.error("Gagal tambah pasien:", err);
+      alert("Gagal menambahkan pasien.");
     }
   };
 
@@ -279,49 +377,65 @@ export default function JanjiTemu() {
                   <Badge type={STATUS_BADGE[apt.status]}>{apt.status}</Badge>
                 </td>
                 <td className="px-4 py-4 text-center">
-                  {apt.status === "Menunggu" ? (
-                    <div className="flex items-center justify-center gap-2">
-                      {/* Selesai langsung */}
-                      <button
-                        onClick={() => updateStatus(apt.uuid, "Selesai")}
-                        className="px-3 py-1.5 text-xs font-medium bg-green-50 text-green-600 border border-green-200 rounded-lg hover:bg-green-100 transition whitespace-nowrap"
-                      >
-                        ✓ Selesai
-                      </button>
+                  <div className="flex items-center justify-center gap-2 flex-wrap">
+                    {apt.status === "Menunggu" && (
+                      <>
+                        {/* Selesai */}
+                        <button
+                          onClick={() => updateStatus(apt.uuid, "Selesai")}
+                          className="px-3 py-1.5 text-xs font-medium bg-green-50 text-green-600 border border-green-200 rounded-lg hover:bg-green-100 transition whitespace-nowrap"
+                        >
+                          ✓ Selesai
+                        </button>
 
-                      {/* Batalkan pakai AlertDialog */}
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <button
-                            onClick={() => setCancelTargetId(apt.uuid)}
-                            className="px-3 py-1.5 text-xs font-medium bg-red-50 text-red-500 border border-red-200 rounded-lg hover:bg-red-100 transition whitespace-nowrap"
-                          >
-                            ✕ Batalkan
-                          </button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Batalkan Janji Temu?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Janji temu <strong>{apt.pasien_nama || apt.pasienNama}</strong> dengan <strong>{apt.dokter_nama || apt.dokterNama}</strong> pada{" "}
-                              <strong>{apt.tanggal} pukul {apt.jam}</strong> akan dibatalkan. Tindakan ini tidak dapat diurungkan.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Tidak, Kembali</AlertDialogCancel>
-                            <AlertDialogAction
-                              variant="destructive"
-                              onClick={handleCancelConfirm}
+                        {/* Batalkan */}
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <button
+                              onClick={() => setCancelTargetId(apt.uuid)}
+                              className="px-3 py-1.5 text-xs font-medium bg-red-50 text-red-500 border border-red-200 rounded-lg hover:bg-red-100 transition whitespace-nowrap"
                             >
-                              Ya, Batalkan
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  ) : (
-                    <span className="text-gray-300 text-lg">—</span>
-                  )}
+                              ✕ Batalkan
+                            </button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Batalkan Janji Temu?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Janji temu <strong>{apt.pasien_nama || apt.pasienNama}</strong> dengan <strong>{apt.dokter_nama || apt.dokterNama}</strong> pada{" "}
+                                <strong>{apt.tanggal} pukul {apt.jam}</strong> akan dibatalkan. Tindakan ini tidak dapat diurungkan.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Tidak, Kembali</AlertDialogCancel>
+                              <AlertDialogAction
+                                variant="destructive"
+                                onClick={handleCancelConfirm}
+                              >
+                                Ya, Batalkan
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </>
+                    )}
+
+                    {/* Tambah ke Pasien — tampil di semua status */}
+                    <button
+                      onClick={() => tambahKePasien(apt)}
+                      title="Tambah ke daftar pasien"
+                      className="px-2 py-1.5 text-xs font-medium bg-blue-50 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-100 transition whitespace-nowrap flex items-center gap-1"
+                    >
+                      <FaUserPlus className="text-xs" /> Pasien
+                    </button>
+
+                    {apt.status === "Selesai" && (
+                      <span className="text-xs text-green-500 font-medium">✓ Selesai</span>
+                    )}
+                    {apt.status === "Dibatalkan" && (
+                      <span className="text-xs text-red-400 font-medium">✕ Dibatalkan</span>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))

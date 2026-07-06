@@ -1,6 +1,6 @@
 import {
   FaUserFriends, FaUserMd, FaSignOutAlt,
-  FaCalendarAlt, FaTag, FaRobot, FaStar,
+  FaCalendarAlt, FaTag, FaStar,
   FaTimes, FaExclamationTriangle, FaCog, FaQuestionCircle,
   FaChevronLeft, FaChevronRight, FaFileInvoiceDollar, FaNotesMedical,
 } from "react-icons/fa";
@@ -34,19 +34,18 @@ export default function Sidebar({ collapsed, onToggle, onMobileClose }) {
 
   const MENU_ITEMS = [
     { to: "/admin",              icon: <MdSpaceDashboard className="text-xl flex-shrink-0" />, label: "Dashboard",         end: true },
-    { to: "/janji-temu",         icon: <FaCalendarAlt    className="text-xl flex-shrink-0" />, label: "Janji Temu" },
     { to: "/pasien",             icon: <FaUserFriends    className="text-xl flex-shrink-0" />, label: "Pasien" },
     { to: "/dokter",             icon: <FaUserMd         className="text-xl flex-shrink-0" />, label: "Dokter" },
-    { to: "/feedback",           icon: <FaStar           className="text-xl flex-shrink-0" />, label: "Feedback & Rating" },
+    { to: "/janji-temu",         icon: <FaCalendarAlt    className="text-xl flex-shrink-0" />, label: "Janji Temu" },
     { to: "/transaksi",          icon: <FaFileInvoiceDollar className="text-xl flex-shrink-0" />, label: "Transaksi" },
     { to: "/catatan-kesehatan",  icon: <FaNotesMedical      className="text-xl flex-shrink-0" />, label: "Catatan Kesehatan" },
+    { to: "/feedback",           icon: <FaStar           className="text-xl flex-shrink-0" />, label: "Feedback & Rating" },
     { to: "/diskon",             icon: <FaTag            className="text-xl flex-shrink-0" />, label: "Diskon & Promo" },
-    { to: "/service-automation", icon: <FaRobot          className="text-xl flex-shrink-0" />, label: "Service Automation" },
-    { to: "/error/400",          icon: <FaExclamationTriangle className="text-xl flex-shrink-0 text-yellow-200" />, label: "Error 400" },
-    { to: "/error/401",          icon: <FaExclamationTriangle className="text-xl flex-shrink-0 text-orange-200" />, label: "Error 401" },
-    { to: "/error/403",          icon: <FaExclamationTriangle className="text-xl flex-shrink-0 text-red-200"    />, label: "Error 403" },
     { to: "/settings",           icon: <FaCog            className="text-xl flex-shrink-0" />, label: "Settings" },
     { to: "/help",               icon: <FaQuestionCircle className="text-xl flex-shrink-0" />, label: "Help" },
+    // { to: "/error/400",          icon: <FaExclamationTriangle className="text-xl flex-shrink-0 text-yellow-200" />, label: "Error 400" },
+    // { to: "/error/401",          icon: <FaExclamationTriangle className="text-xl flex-shrink-0 text-orange-200" />, label: "Error 401" },
+    // { to: "/error/403",          icon: <FaExclamationTriangle className="text-xl flex-shrink-0 text-red-200"    />, label: "Error 403" },
   ];
 
   return (

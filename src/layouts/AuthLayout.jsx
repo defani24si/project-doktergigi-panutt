@@ -1,4 +1,4 @@
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, Navigate } from "react-router-dom";
 
 // Logo Panutt — sama persis dengan sidebar
 function PanuttLogo() {
@@ -99,6 +99,16 @@ function IllustrationRegister() {
 export default function AuthLayout() {
   const { pathname } = useLocation();
   const isRegister = pathname === "/register";
+
+  // Kalau sudah login → redirect sesuai role, tidak boleh ke login/register lagi
+  const raw = localStorage.getItem("user");
+  if (raw) {
+    try {
+      const user = JSON.parse(raw);
+      if (user.role === "admin") return <Navigate to="/admin" replace />;
+      if (user.role === "member") return <Navigate to="/member/dashboard" replace />;
+    } catch {}
+  }
 
   return (
     <div

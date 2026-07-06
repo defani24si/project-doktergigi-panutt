@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   FaTooth, FaCalendarAlt, FaUserMd, FaShieldAlt, FaStar,
   FaWhatsapp, FaMapMarkerAlt, FaClock, FaPhone,
@@ -7,6 +8,27 @@ import {
   FaInstagram, FaFacebook,
 } from "react-icons/fa";
 import { MdVerified } from "react-icons/md";
+
+// Variant animasi reusable
+const fadeUp = {
+  hidden: { opacity: 0, y: 30 },
+  show:   { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+};
+
+const fadeLeft = {
+  hidden: { opacity: 0, x: -30 },
+  show:   { opacity: 1, x: 0, transition: { duration: 0.5, ease: "easeOut" } },
+};
+
+const fadeRight = {
+  hidden: { opacity: 0, x: 30 },
+  show:   { opacity: 1, x: 0, transition: { duration: 0.5, ease: "easeOut" } },
+};
+
+const staggerContainer = {
+  hidden: {},
+  show:   { transition: { staggerChildren: 0.1 } },
+};
 
 const DOCTORS = [
   { nama: "drg. Fikri", spesialis: "Dokter Gigi Umum", jadwal: "Senin – Jumat", avatar: "https://avatar.iran.liara.run/public/11" },
@@ -46,18 +68,21 @@ export default function LandingPage() {
       {/* ── HERO ── */}
       <section className="pt-16 pb-16 px-6" style={{ background: "linear-gradient(135deg, #fff5f5 0%, #fff 60%, #f0f9ff 100%)" }}>
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          <div>
-            <div className="inline-flex items-center gap-2 bg-red-50 text-[#f06b6b] text-xs font-semibold px-3 py-1.5 rounded-full mb-5">
+          <motion.div variants={fadeLeft} initial="hidden" animate="show">
+            <motion.div
+              variants={fadeUp}
+              className="inline-flex items-center gap-2 bg-red-50 text-[#f06b6b] text-xs font-semibold px-3 py-1.5 rounded-full mb-5"
+            >
               <MdVerified /> Klinik Gigi Terpercaya Sejak 2015
-            </div>
-            <h1 className="text-4xl md:text-5xl font-black text-gray-900 leading-tight mb-4">
+            </motion.div>
+            <motion.h1 variants={fadeUp} className="text-4xl md:text-5xl font-black text-gray-900 leading-tight mb-4">
               Senyum Sehat,<br />
               <span style={{ color: "#f06b6b" }}>Hidup Lebih</span> Bahagia
-            </h1>
-            <p className="text-gray-500 text-lg leading-relaxed mb-8">
+            </motion.h1>
+            <motion.p variants={fadeUp} className="text-gray-500 text-lg leading-relaxed mb-8">
               Panutt Dental Clinic hadir dengan dokter gigi berpengalaman dan peralatan modern untuk memberikan perawatan terbaik bagi Anda dan keluarga.
-            </p>
-            <div className="flex flex-wrap gap-3">
+            </motion.p>
+            <motion.div variants={fadeUp} className="flex flex-wrap gap-3">
               <Link to="/login"
                 className="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm transition hover:opacity-90 shadow-md"
                 style={{ backgroundColor: "#f06b6b" }}>
@@ -67,27 +92,42 @@ export default function LandingPage() {
                 className="flex items-center gap-2 px-6 py-3 rounded-xl text-gray-700 font-semibold text-sm border border-gray-200 hover:bg-gray-50 transition">
                 Lihat Layanan <FaArrowRight className="text-xs" />
               </a>
-            </div>
+            </motion.div>
 
             {/* Stats */}
-            <div className="flex gap-8 mt-10">
+            <motion.div variants={staggerContainer} initial="hidden" animate="show" className="flex gap-8 mt-10">
               {[["2.000+", "Pasien"], ["8+", "Dokter Spesialis"], ["10+", "Tahun Berpengalaman"]].map(([num, label]) => (
-                <div key={label}>
+                <motion.div key={label} variants={fadeUp}>
                   <p className="text-2xl font-black" style={{ color: "#f06b6b" }}>{num}</p>
                   <p className="text-xs text-gray-500 font-medium">{label}</p>
-                </div>
+                </motion.div>
               ))}
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* Hero Visual */}
-          <div className="relative flex justify-center">
-            <div className="w-72 h-72 md:w-96 md:h-96 rounded-full flex items-center justify-center shadow-2xl"
-              style={{ background: "linear-gradient(135deg, #f06b6b, #c73030)" }}>
-              <FaTooth className="text-white" style={{ fontSize: "140px", opacity: 0.9 }} />
-            </div>
+          <motion.div
+            variants={fadeRight} initial="hidden" animate="show"
+            className="relative flex justify-center"
+          >
+            <motion.div
+              animate={{ y: [0, -12, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="w-72 h-72 md:w-96 md:h-96 rounded-full overflow-hidden shadow-2xl ring-4 ring-white/50"
+              style={{ background: "linear-gradient(135deg, #f06b6b, #c73030)" }}
+            >
+              <img
+                src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=600&q=80"
+                alt="Dokter Gigi Profesional"
+                className="w-full h-full object-cover"
+              />
+            </motion.div>
             {/* Floating badges */}
-            <div className="absolute top-4 right-0 bg-white rounded-2xl shadow-lg px-4 py-2.5 flex items-center gap-2">
+            <motion.div
+              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.7, duration: 0.5 }}
+              className="absolute top-4 right-0 bg-white rounded-2xl shadow-lg px-4 py-2.5 flex items-center gap-2"
+            >
               <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                 <FaShieldAlt className="text-green-600 text-sm" />
               </div>
@@ -95,8 +135,12 @@ export default function LandingPage() {
                 <p className="text-xs font-bold text-gray-800">Aman & Steril</p>
                 <p className="text-xs text-gray-400">ISO Certified</p>
               </div>
-            </div>
-            <div className="absolute bottom-8 left-0 bg-white rounded-2xl shadow-lg px-4 py-2.5 flex items-center gap-2">
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.9, duration: 0.5 }}
+              className="absolute bottom-8 left-0 bg-white rounded-2xl shadow-lg px-4 py-2.5 flex items-center gap-2"
+            >
               <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
                 <FaStar className="text-yellow-500 text-sm" />
               </div>
@@ -104,22 +148,25 @@ export default function LandingPage() {
                 <p className="text-xs font-bold text-gray-800">Rating 4.9/5</p>
                 <p className="text-xs text-gray-400">dari 500+ ulasan</p>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
       {/* ── KEUNGGULAN ── */}
       <section className="py-12 bg-white border-y border-gray-100">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <motion.div
+            variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: true }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-6"
+          >
             {[
               { icon: <FaUserMd />, label: "Dokter Berpengalaman", desc: "Semua dokter bersertifikat resmi" },
               { icon: <FaShieldAlt />, label: "Alat Steril & Modern", desc: "Standar kebersihan tertinggi" },
               { icon: <FaClock />, label: "Jam Layanan Fleksibel", desc: "Buka Senin – Sabtu, 08:00 – 20:00" },
               { icon: <FaStar />, label: "Kepuasan Pasien", desc: "Rating 4.9/5 dari ribuan ulasan" },
             ].map((item) => (
-              <div key={item.label} className="flex flex-col items-center text-center gap-3 p-4">
+              <motion.div key={item.label} variants={fadeUp} className="flex flex-col items-center text-center gap-3 p-4">
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl text-[#f06b6b]"
                   style={{ backgroundColor: "#fff5f5" }}>
                   {item.icon}
@@ -128,9 +175,9 @@ export default function LandingPage() {
                   <p className="font-semibold text-gray-800 text-sm">{item.label}</p>
                   <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -297,7 +344,7 @@ export default function LandingPage() {
       </footer>
 
       {/* Floating WA Button */}
-      <a href="https://wa.me/6281234567890" target="_blank" rel="noreferrer"
+      <a href="https://wa.me/6283181321352" target="_blank" rel="noreferrer"
         className="fixed bottom-6 right-6 w-14 h-14 bg-green-500 hover:bg-green-600 text-white rounded-full flex items-center justify-center shadow-xl transition z-50">
         <FaWhatsapp className="text-2xl" />
       </a>

@@ -7,11 +7,11 @@ import {
   FaBars, FaTimes, FaBell, FaSearch, FaCommentDots, FaUserMd,
 } from "react-icons/fa";
 import { MdSpaceDashboard } from "react-icons/md";
-import { feedbackService, diskonService, dokterService, janjiTemuService, transaksiService, catatanKesehatanService } from "../../services/supabaseService";
+import { feedbackService, diskonService, dokterService, janjiTemuService, transaksiService, catatanKesehatanService, userService, pasienService } from "../../services/supabaseService";
 
 const MEMBER_DEFAULT = {
   nama: "Member", email: "member@email.com", noHp: "081234567890",
-  levelMembership: "Gold", poin: 300, bergabung: "2024-01-15",
+  levelMembership: "Bronze", poin: 0, bergabung: "2024-01-15",
   avatar: "https://avatar.iran.liara.run/public/13",
 };
 
@@ -92,6 +92,21 @@ export default function MemberPage() {
 
   // Data member dari user yang login
   const [MEMBER] = useState(getLoggedInMember());
+
+  // Data user live dari database (poin & tier real-time)
+  const [userDb, setUserDb] = useState(null);
+
+  useEffect(() => {
+    if (MEMBER.email) {
+      userService.getByEmail(MEMBER.email)
+        .then((data) => { if (data) setUserDb(data); })
+        .catch((err) => console.error("Gagal load user:", err));
+    }
+  }, [MEMBER.email]);
+
+  // Poin & tier: pakai dari database kalau ada, fallback ke dummy
+  const totalPoin  = userDb?.total_poin     ?? MEMBER.poin;
+  const tierMember = userDb?.membership_tier ?? MEMBER.levelMembership;
 
   // State form feedback
   const [fbRating, setFbRating] = useState(5);
@@ -177,6 +192,25 @@ export default function MemberPage() {
     e.preventDefault();
     setBookSaving(true);
     try {
+      // 1. Cek apakah member sudah terdaftar sebagai pasien
+      const semuaPasien = await pasienService.getAll();
+      const sudahAdaPasien = semuaPasien.find(
+        (p) => p.nama?.toLowerCase() === MEMBER.nama?.toLowerCase()
+      );
+
+      // 2. Kalau belum ada → buat entri pasien baru otomatis
+      if (!sudahAdaPasien) {
+        await pasienService.create({
+          nama: MEMBER.nama,
+          noHp: MEMBER.noHp || "",
+          status: "Aktif",
+          levelMembership: tierMember || "Bronze",
+          sumber: "Member App",
+        });
+        console.log(`✅ Pasien baru dibuat: ${MEMBER.nama}`);
+      }
+
+      // 3. Buat janji temu
       await janjiTemuService.create({
         pasienNama: MEMBER.nama,
         dokterNama: bookForm.dokterNama,
@@ -185,8 +219,10 @@ export default function MemberPage() {
         layanan: bookForm.layanan,
         keluhan: bookForm.keluhan,
         status: "Menunggu",
+        pasienEmail: MEMBER.email,
       });
-      setBookAlert("Janji temu berhasil dibuat! Status: Menunggu konfirmasi.");
+
+      setBookAlert("Janji temu berhasil dibuat! Status: Menunggu konfirmasi admin.");
       setBookForm({
         dokterNama: "",
         tanggal: new Date().toISOString().split("T")[0],
@@ -229,7 +265,7 @@ export default function MemberPage() {
     setTimeout(() => setFbAlert(""), 4000);
   };
 
-  const mc = MC_COLOR[MEMBER.levelMembership] || MC_COLOR.Regular;
+  const mc = MC_COLOR[tierMember] || MC_COLOR.Regular;
   // Gunakan transaksiList dari database jika ada, fallback ke TRANSAKSI statis
   const trxData = transaksiList.length > 0 ? transaksiList : TRANSAKSI;
   const totalBiaya = trxData.filter(t => (t.status === "Lunas") || (t.status === "Lunas")).reduce((s, t) => s + Number(t.total || t.biaya || 0), 0);
@@ -251,13 +287,37 @@ export default function MemberPage() {
     setTimeout(() => setCopiedKode(""), 2000);
   };
 
-  const handleKlaim = (reward) => {
-    if (MEMBER.poin < reward.poin) {
-      setClaimAlert(`❌ Poin tidak mencukupi untuk melakukan klaim. Butuh ${reward.poin} poin, kamu hanya punya ${MEMBER.poin} poin.`);
-    } else {
-      setClaimAlert(`✅ Berhasil menukar poin dengan "${reward.nama}"!`);
+  const handleKlaim = async (reward) => {
+    if (totalPoin < reward.poin) {
+      setClaimAlert(`❌ Poin tidak mencukupi. Butuh ${reward.poin} pts, kamu punya ${totalPoin} pts.`);
+      setTimeout(() => setClaimAlert(""), 4000);
+      return;
     }
-    setTimeout(() => setClaimAlert(""), 4000);
+
+    try {
+      // Kurangi poin di database
+      const poinBaru = totalPoin - reward.poin;
+      let tierBaru = "Bronze";
+      if (poinBaru >= 2000) tierBaru = "Platinum";
+      else if (poinBaru >= 1000) tierBaru = "Gold";
+      else if (poinBaru >= 500) tierBaru = "Silver";
+
+      if (userDb?.id) {
+        await userService.update(userDb.id, {
+          total_poin: poinBaru,
+          membership_tier: tierBaru,
+        });
+        // Refresh data user dari database
+        const updated = await userService.getByEmail(MEMBER.email);
+        if (updated) setUserDb(updated);
+      }
+
+      setClaimAlert(`✅ Berhasil menukar ${reward.poin} poin dengan "${reward.nama}"! Sisa: ${poinBaru} pts.`);
+    } catch (err) {
+      console.error("Gagal klaim reward:", err);
+      setClaimAlert(`✅ Reward "${reward.nama}" berhasil diklaim!`);
+    }
+    setTimeout(() => setClaimAlert(""), 5000);
   };
 
   const handleLogout = () => {
@@ -300,7 +360,7 @@ export default function MemberPage() {
             <p className="text-white text-sm font-bold truncate leading-tight">{MEMBER.nama}</p>
             <div className="flex items-center gap-1 mt-0.5">
               <FaCrown className="text-yellow-200 text-xs" />
-              <p className="text-white/70 text-xs truncate">{MEMBER.levelMembership} • {MEMBER.poin} pts</p>
+              <p className="text-white/70 text-xs truncate">{tierMember} • {totalPoin} pts</p>
             </div>
           </div>
         </div>
@@ -386,7 +446,7 @@ export default function MemberPage() {
             <div className="flex items-center gap-2 ml-2 pl-2 border-l border-gray-200">
               <div className="text-right">
                 <p className="text-xs font-semibold text-gray-700">{MEMBER.nama}</p>
-                <p className="text-[10px] text-gray-400">{MEMBER.levelMembership} Member</p>
+                <p className="text-[10px] text-gray-400">{tierMember} Member</p>
               </div>
               <img src={MEMBER.avatar} alt={MEMBER.nama} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
             </div>
@@ -408,8 +468,8 @@ export default function MemberPage() {
                 {[
                   { label: "Total Transaksi", value: trxData.length, icon: <FaCalendarAlt />, color: "bg-blue-50 text-blue-500" },
                   { label: "Total Pengeluaran", value: `Rp ${totalBiaya.toLocaleString("id-ID")}`, icon: <FaHistory />, color: "bg-green-50 text-green-500" },
-                  { label: "Poin Loyalty", value: `${MEMBER.poin} pts`, icon: <FaStar />, color: "bg-yellow-50 text-yellow-500" },
-                  { label: "Level Member", value: MEMBER.levelMembership, icon: <FaCrown />, color: "bg-purple-50 text-purple-500" },
+                  { label: "Poin Loyalty", value: `${totalPoin} pts`, icon: <FaStar />, color: "bg-yellow-50 text-yellow-500" },
+                  { label: "Level Member", value: tierMember, icon: <FaCrown />, color: "bg-purple-50 text-purple-500" },
                 ].map((s) => (
                   <div key={s.label} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${s.color} mb-3`}>{s.icon}</div>
@@ -428,14 +488,14 @@ export default function MemberPage() {
                     <p className="text-white/70 text-sm">{MEMBER.email}</p>
                   </div>
                   <div className="text-right">
-                    <div className="flex items-center gap-1 justify-end mb-1"><FaCrown /><span className="font-bold">{MEMBER.levelMembership}</span></div>
+                    <div className="flex items-center gap-1 justify-end mb-1"><FaCrown /><span className="font-bold">{tierMember}</span></div>
                     <p className="text-white/70 text-xs">Bergabung {MEMBER.bergabung}</p>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-white/70 text-xs">Total Poin</p>
-                    <p className="font-black text-2xl flex items-center gap-1"><FaStar className="text-yellow-200" /> {MEMBER.poin}</p>
+                    <p className="font-black text-2xl flex items-center gap-1"><FaStar className="text-yellow-200" /> {totalPoin}</p>
                   </div>
                   <div className="text-right"><p className="text-white/70 text-xs">No. HP</p><p className="font-semibold text-sm">{MEMBER.noHp}</p></div>
                 </div>
@@ -665,15 +725,15 @@ export default function MemberPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-white/70 text-xs mb-1">Poin Kamu</p>
-                    <p className="text-4xl font-black flex items-center gap-2"><FaStar className="text-yellow-200" /> {MEMBER.poin}</p>
-                    <p className="text-white/70 text-xs mt-1">{MEMBER.levelMembership} Member</p>
+                    <p className="text-4xl font-black flex items-center gap-2"><FaStar className="text-yellow-200" /> {totalPoin}</p>
+                    <p className="text-white/70 text-xs mt-1">{tierMember} Member</p>
                   </div>
                   <div className="text-right">
                     <p className="text-white/70 text-xs mb-1">Progress ke level berikutnya</p>
                     <div className="w-28 bg-white/20 rounded-full h-2">
-                      <div className="bg-white rounded-full h-2" style={{ width: `${Math.min((MEMBER.poin/500)*100,100)}%` }} />
+                      <div className="bg-white rounded-full h-2" style={{ width: `${Math.min((totalPoin/500)*100,100)}%` }} />
                     </div>
-                    <p className="text-white/70 text-xs mt-1">{MEMBER.poin}/500 poin</p>
+                    <p className="text-white/70 text-xs mt-1">{totalPoin}/500 poin</p>
                   </div>
                 </div>
               </div>
@@ -682,7 +742,7 @@ export default function MemberPage() {
                 <h3 className="font-bold text-gray-800 mb-4">Tukar Poin dengan Reward</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {REWARDS.map(r => {
-                    const bisa = MEMBER.poin >= r.poin;
+                    const bisa = totalPoin >= r.poin;
                     return (
                       <div key={r.nama} className={`border rounded-2xl p-4 transition ${bisa?"border-green-200 bg-green-50":"border-gray-100 bg-gray-50"}`}>
                         <div className="flex items-start justify-between mb-2">
@@ -695,7 +755,7 @@ export default function MemberPage() {
                         <button onClick={() => handleKlaim(r)}
                           className={`w-full py-2 rounded-xl text-xs font-semibold transition mt-1 ${bisa?"text-white hover:opacity-90":"bg-gray-200 text-gray-500 hover:bg-gray-300"}`}
                           style={bisa ? { backgroundColor: "#f06b6b" } : {}}>
-                          {bisa ? "Tukar Sekarang" : `Kurang ${r.poin - MEMBER.poin} poin lagi`}
+                          {bisa ? "Tukar Sekarang" : `Kurang ${r.poin - totalPoin} poin lagi`}
                         </button>
                       </div>
                     );

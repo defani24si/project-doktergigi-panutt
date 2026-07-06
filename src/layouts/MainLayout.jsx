@@ -1,13 +1,19 @@
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, Navigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 
 export default function MainLayout() {
-  // desktop: sidebar visible by default
-  // mobile: sidebar hidden by default
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Cek role dari localStorage — hanya admin yang boleh masuk
+  // Hooks dipanggil dulu sebelum kondisional return (aturan React Hooks)
+  const raw = localStorage.getItem("user");
+  const user = raw ? JSON.parse(raw) : null;
+  if (!user || user.role !== "admin") {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <div id="app-container" className="flex min-h-screen bg-gray-50">
@@ -22,11 +28,10 @@ export default function MainLayout() {
 
       {/* Sidebar — mobile: overlay, desktop: push */}
       <div className={`
-        fixed top-0 left-0 h-full z-40 transition-transform duration-300
+        fixed top-0 left-0 h-full z-40 transition-all duration-300
         ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
         md:static md:translate-x-0 md:z-auto md:h-auto md:self-stretch
-        ${desktopCollapsed ? "md:w-[68px]" : "md:w-64"}
-        transition-all
+        flex-shrink-0
       `}>
         <Sidebar
           collapsed={desktopCollapsed}

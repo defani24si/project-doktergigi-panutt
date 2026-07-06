@@ -84,6 +84,7 @@ const janjiFromDb = (r) => ({
   uuid: r.id,
   id: r.janji_id,
   pasienNama: r.pasien_nama,
+  pasienEmail: r.pasien_email || null,
   dokterNama: r.dokter_nama,
   tanggal: r.tanggal,
   jam: r.jam ? r.jam.slice(0, 5) : r.jam,
@@ -94,6 +95,7 @@ const janjiFromDb = (r) => ({
 
 const janjiToDb = (f) => ({
   pasien_nama: f.pasienNama,
+  pasien_email: f.pasienEmail || null,
   dokter_nama: f.dokterNama,
   tanggal: f.tanggal,
   jam: f.jam,
@@ -451,8 +453,58 @@ export const userService = {
     return res.data[0];
   },
 
+  async getByEmail(email) {
+    const res = await axios.get(`${API_URL}/users?email=eq.${encodeURIComponent(email)}`, { headers });
+    return res.data[0];
+  },
+
   async update(id, data) {
     const res = await axios.patch(`${API_URL}/users?id=eq.${id}`, data, { headers });
     return res.data[0];
+  },
+
+  // Tambah poin ke user berdasarkan email
+  async tambahPoin(email, jumlahPoin) {
+    // 1. Ambil user
+    const res = await axios.get(`${API_URL}/users?email=eq.${encodeURIComponent(email)}`, { headers });
+    const user = res.data[0];
+    if (!user) throw new Error(`User dengan email ${email} tidak ditemukan`);
+
+    // 2. Hitung poin baru
+    const poinBaru = (user.total_poin || 0) + jumlahPoin;
+
+    // 3. Hitung tier baru
+    let tierBaru = 'Bronze';
+    if (poinBaru >= 2000) tierBaru = 'Platinum';
+    else if (poinBaru >= 1000) tierBaru = 'Gold';
+    else if (poinBaru >= 500) tierBaru = 'Silver';
+
+    // 4. Update user
+    const updated = await axios.patch(
+      `${API_URL}/users?id=eq.${user.id}`,
+      { total_poin: poinBaru, membership_tier: tierBaru },
+      { headers }
+    );
+    return { user: updated.data[0], poinBaru, tierBaru };
+  },
+
+  // Tambah poin berdasarkan nama (fallback)
+  async tambahPoinByNama(nama, jumlahPoin) {
+    const res = await axios.get(`${API_URL}/users?full_name=eq.${encodeURIComponent(nama)}`, { headers });
+    const user = res.data[0];
+    if (!user) return null;
+
+    const poinBaru = (user.total_poin || 0) + jumlahPoin;
+    let tierBaru = 'Bronze';
+    if (poinBaru >= 2000) tierBaru = 'Platinum';
+    else if (poinBaru >= 1000) tierBaru = 'Gold';
+    else if (poinBaru >= 500) tierBaru = 'Silver';
+
+    await axios.patch(
+      `${API_URL}/users?id=eq.${user.id}`,
+      { total_poin: poinBaru, membership_tier: tierBaru },
+      { headers }
+    );
+    return { poinBaru, tierBaru };
   },
 };

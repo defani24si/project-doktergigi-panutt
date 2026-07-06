@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { FaPlus, FaSearch, FaEdit, FaUserAlt, FaNotesMedical, FaCrown } from "react-icons/fa";
+import { useState, useMemo, useEffect } from "react";
+import { FaPlus, FaSearch, FaEdit, FaTrash, FaUserAlt, FaNotesMedical, FaCrown } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useClinic } from "../../context/useClinic";
 import Card from "../../components/Card";
@@ -45,6 +45,7 @@ const EMPTY_FORM = {
 };
 
 import { pasienService } from "../../services/supabaseService";
+import { janjiTemuService } from "../../services/supabaseService";
 
 export default function Pasien() {
   const { patients: pasienData, refreshPatients } = useClinic();
@@ -56,6 +57,19 @@ export default function Pasien() {
   const [isEdit, setIsEdit] = useState(false);
   const [successAlert, setSuccessAlert] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Nama dari janji temu yang belum terdaftar sebagai pasien
+  const [namaFromJanji, setNamaFromJanji] = useState([]);
+
+  useEffect(() => {
+    janjiTemuService.getAll().then((janji) => {
+      const namaPasienTerdaftar = new Set(pasienData.map((p) => p.nama?.toLowerCase()));
+      const namaJanji = [...new Set(
+        janji.map((j) => j.pasienNama || j.pasien_nama).filter(Boolean)
+      )].filter((n) => !namaPasienTerdaftar.has(n?.toLowerCase()));
+      setNamaFromJanji(namaJanji);
+    }).catch(() => {});
+  }, [pasienData]);
 
   const totalPasien = pasienData.length;
   const pasienAktif = pasienData.filter((p) => p.status === "Aktif").length;
@@ -109,6 +123,19 @@ export default function Pasien() {
   const openEdit = (p) => { setForm(p); setIsEdit(true); setShowForm(true); };
   const closeForm = () => { setForm(EMPTY_FORM); setIsEdit(false); setShowForm(false); };
 
+  const handleDelete = async (uuid, nama) => {
+    if (!window.confirm(`Hapus pasien "${nama}"? Tindakan ini tidak bisa dibatalkan.`)) return;
+    try {
+      await pasienService.delete(uuid);
+      await refreshPatients();
+      setSuccessAlert(`Pasien "${nama}" berhasil dihapus.`);
+      setTimeout(() => setSuccessAlert(""), 4000);
+    } catch (err) {
+      console.error("Gagal hapus pasien:", err);
+      alert("Gagal menghapus pasien.");
+    }
+  };
+
   return (
     <div className="flex flex-col w-full pb-10">
       {/* Page Header */}
@@ -157,7 +184,7 @@ export default function Pasien() {
               <FaCrown />
             </div>
             <div>
-              <p className="text-gray-500 text-sm font-medium">Member Platinum</p>
+              <p className="text-gray-500 text-sm font-medium">Member</p>
               <h3 className="text-2xl font-bold text-gray-800">{pasienPlatinum}</h3>
             </div>
           </div>
@@ -248,9 +275,14 @@ export default function Pasien() {
                   <Badge type={STATUS_BADGE[p.status] || "secondary"}>{p.status}</Badge>
                 </td>
                 <td className="px-4 py-4 text-center">
-                  <button onClick={() => openEdit(p)} className="p-2 text-gray-400 hover:text-yellow-500 hover:bg-yellow-50 rounded-lg transition">
-                    <FaEdit className="text-lg" />
-                  </button>
+                  <div className="flex items-center justify-center gap-1">
+                    <button onClick={() => openEdit(p)} className="p-2 text-gray-400 hover:text-yellow-500 hover:bg-yellow-50 rounded-lg transition">
+                      <FaEdit className="text-lg" />
+                    </button>
+                    <button onClick={() => handleDelete(p.uuid, p.nama)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition">
+                      <FaTrash className="text-lg" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))
@@ -261,8 +293,27 @@ export default function Pasien() {
       {/* Modal */}
       <Modal isOpen={showForm} onClose={closeForm} title={isEdit ? "Edit Data Pasien" : "Tambah Pasien Baru"}>
         <form onSubmit={handleSave} className="space-y-4">
-          <InputField label="Nama Lengkap" value={form.nama}
-            onChange={(e) => setForm({ ...form, nama: e.target.value })} placeholder="Nama lengkap pasien" />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">Nama Lengkap</label>
+            <input
+              required
+              list="nama-pasien-list"
+              value={form.nama}
+              onChange={(e) => setForm({ ...form, nama: e.target.value })}
+              placeholder="Nama lengkap pasien / pilih dari janji temu"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f06b6b]"
+            />
+            <datalist id="nama-pasien-list">
+              {namaFromJanji.map((nama) => (
+                <option key={nama} value={nama} />
+              ))}
+            </datalist>
+            {namaFromJanji.length > 0 && (
+              <p className="text-xs text-blue-500 mt-0.5">
+                💡 {namaFromJanji.length} nama tersedia dari janji temu yang belum terdaftar
+              </p>
+            )}
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium text-gray-700">Tanggal Lahir</label>
