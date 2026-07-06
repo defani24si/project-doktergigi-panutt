@@ -85,8 +85,8 @@ export default function JanjiTemu() {
         const matchStatus = filterStatus === "Semua" || apt.status === filterStatus;
         const matchDate = filterTanggal === "" || apt.tanggal === filterTanggal;
         return matchSearch && matchStatus && matchDate;
-      })
-      .sort((a, b) => a.tanggal === b.tanggal ? a.jam.localeCompare(b.jam) : a.tanggal.localeCompare(b.tanggal));
+      });
+      // Urutan dari database (created_at.desc = terbaru di atas)
   }, [appointments, searchTerm, filterStatus, filterTanggal]);
 
   const getAvailableSlots = (tanggal, dokter) => {
@@ -159,41 +159,58 @@ export default function JanjiTemu() {
 
       // 3. Kalau status jadi "Selesai"
       if (newStatus === "Selesai" && appt) {
-        const pasienEmail = appt.pasienEmail || appt.pasien_email;
+        let pasienEmail = appt.pasienEmail || appt.pasien_email || null;
         const pasienNama  = appt.pasienNama  || appt.pasien_nama || "Pasien";
+
+        // Kalau tidak ada email di janji, cari dari tabel users berdasarkan nama
+        if (!pasienEmail) {
+          try {
+            const allUsers = await userService.getAll();
+            const matchUser = allUsers.find(u =>
+              u.full_name?.toLowerCase() === pasienNama.toLowerCase()
+            );
+            if (matchUser) {
+              pasienEmail = matchUser.email;
+              console.log(`📧 Email ditemukan dari users: ${pasienEmail}`);
+            }
+          } catch { /* ignore */ }
+        }
+
         const POIN_PER_KUNJUNGAN = 50;
 
         // 3a. Auto-create transaksi di database
         try {
-          // Ambil harga layanan dari daftar (atau default 0)
           const HARGA_LAYANAN = {
-            "Konsultasi":     75000,
-            "Scaling Gigi":  150000,
+            "Konsultasi":      75000,
+            "Scaling Gigi":   150000,
             "Tambal Komposit": 200000,
-            "Tambal Gigi":   200000,
-            "Cabut Gigi":    100000,
-            "Odontektomi":   800000,
-            "Kawat Gigi":   4000000,
+            "Tambal Gigi":    200000,
+            "Cabut Gigi":     100000,
+            "Odontektomi":    800000,
+            "Kawat Gigi":    4000000,
             "Pemutihan Gigi": 500000,
           };
           const biaya = HARGA_LAYANAN[appt.layanan] || 0;
 
-          await transaksiService.create({
-            pasienNama:        pasienNama,
-            pasienEmail:       pasienEmail || null,
-            layanan:           appt.layanan,
-            dokterNama:        appt.dokterNama || appt.dokter_nama || "",
-            tanggal:           appt.tanggal,
-            biaya:             biaya,
-            diskonPersen:      0,
-            diskonNominal:     0,
-            total:             biaya,
-            metodePembayaran:  null,
-            status:            "Pending", // Admin bisa update ke Lunas setelah bayar
+          console.log(`🔄 Membuat transaksi: ${pasienNama} | ${appt.layanan} | ${appt.tanggal} | email: ${pasienEmail}`);
+
+          const created = await transaksiService.create({
+            pasienNama,
+            pasienEmail: pasienEmail || null,
+            layanan:     appt.layanan,
+            dokterNama:  appt.dokterNama || appt.dokter_nama || "",
+            tanggal:     appt.tanggal,
+            biaya,
+            diskonPersen:     0,
+            diskonNominal:    0,
+            total:            biaya,
+            metodePembayaran: null,
+            status:           "Pending",
           });
-          console.log(`✅ Transaksi otomatis dibuat untuk ${pasienNama} - ${appt.layanan}`);
+
+          console.log(`✅ Transaksi berhasil:`, created);
         } catch (trxErr) {
-          console.warn("Gagal buat transaksi otomatis:", trxErr.message);
+          console.error("❌ Gagal buat transaksi:", trxErr);
         }
 
         // 3b. Tambah poin ke member

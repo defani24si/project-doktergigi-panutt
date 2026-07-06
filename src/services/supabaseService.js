@@ -211,7 +211,7 @@ export const dokterService = {
 // =====================================================
 export const janjiTemuService = {
   async getAll() {
-    const res = await axios.get(`${API_URL}/janji_temu?order=tanggal.desc,jam.desc`, { headers });
+    const res = await axios.get(`${API_URL}/janji_temu?order=created_at.desc`, { headers });
     return res.data.map(janjiFromDb);
   },
 
