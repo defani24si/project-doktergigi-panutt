@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { ClinicContext } from "./ClinicContext";
+import { ClinicContext } from "./ClinicContextValue";
 
 export function useClinic() {
   return useContext(ClinicContext);

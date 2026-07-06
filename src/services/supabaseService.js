@@ -370,29 +370,28 @@ export const transaksiService = {
   },
 
   async create(data) {
-    // Generate ID
-    const res = await axios.get(`${API_URL}/transaksi?select=trx_id`, { headers });
-    const nextNum = res.data.length + 1;
-    const trxId = `TRX-${String(nextNum).padStart(3, "0")}`;
-    const year = new Date().getFullYear();
-    const invoice = `INV-${year}-${String(nextNum).padStart(3, "0")}`;
+    // Generate ID unik pakai timestamp agar tidak duplikat
+    const ts = Date.now();
+    const trxId  = `TRX-${ts}`;
+    const year   = new Date().getFullYear();
+    const invoice = `INV-${year}-${ts}`;
 
     const payload = {
       trx_id: trxId,
       invoice,
-      pasien_nama: data.pasienNama,
-      pasien_email: data.pasienEmail || null,
-      layanan: data.layanan,
-      dokter_nama: data.dokterNama || null,
-      tanggal: data.tanggal,
-      biaya: Number(data.biaya) || 0,
-      diskon_persen: Number(data.diskonPersen) || 0,
-      diskon_nominal: Number(data.diskonNominal) || 0,
-      total: Number(data.total) || Number(data.biaya) || 0,
+      pasien_nama:       data.pasienNama,
+      pasien_email:      data.pasienEmail || null,
+      layanan:           data.layanan,
+      dokter_nama:       data.dokterNama || null,
+      tanggal:           data.tanggal,
+      biaya:             Number(data.biaya) || 0,
+      diskon_persen:     Number(data.diskonPersen) || 0,
+      diskon_nominal:    Number(data.diskonNominal) || 0,
+      total:             Number(data.total) || Number(data.biaya) || 0,
       metode_pembayaran: data.metodePembayaran || null,
-      kode_promo: data.kodePromo || null,
-      status: data.status || 'Pending',
-      catatan: data.catatan || null,
+      kode_promo:        data.kodePromo || null,
+      status:            data.status || 'Pending',
+      catatan:           data.catatan || null,
     };
     const created = await axios.post(`${API_URL}/transaksi`, payload, { headers });
     return created.data[0];

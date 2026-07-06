@@ -1,7 +1,8 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { pasienService, dokterService, janjiTemuService } from "../services/supabaseService";
+import { ClinicContext } from "./ClinicContextValue";
 
-export const ClinicContext = createContext();
+export { ClinicContext };
 
 export function ClinicProvider({ children }) {
   const [patients, setPatients] = useState([]);
